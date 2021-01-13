@@ -39,7 +39,6 @@ public class Dao {
       rs = pstmt.executeQuery();
 
       while (rs.next()) {
-
         locations.add(rs.getString(1));
       }
     }
