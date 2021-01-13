@@ -1,3 +1,6 @@
+# gmh-registration-service
+GMH URN:NBN registration service
+
 # Swagger Jersey generated server
 
 ## Overview
