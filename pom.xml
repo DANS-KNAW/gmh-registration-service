@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>nl.knaw.dans.shared</groupId>
     <artifactId>gmh-registration-service</artifactId>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
     <name>gmh-registration-service</name>
     <version>1.0.0</version>
 
