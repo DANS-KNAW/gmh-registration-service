@@ -18,6 +18,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * NbnLocationsObject
@@ -31,9 +33,21 @@ public class NbnLocationsObject {
   @JsonProperty("locations")
   private List<String> locations = null;
 
+  private String institutionPrefix = null;
+
   public NbnLocationsObject identifier(String identifier) {
     this.identifier = identifier;
+    this.institutionPrefix = getInstitutionPrefix(identifier);
     return this;
+  }
+
+  private String getInstitutionPrefix(String identifier) {
+    Pattern pattern = Pattern.compile("(ui:[\\d]{2})");
+    Matcher matcher = pattern.matcher(identifier);
+    if (matcher.find()) {
+      return matcher.group(1);
+    }
+    return "";
   }
 
   /**
@@ -78,6 +92,8 @@ public class NbnLocationsObject {
   public void setLocations(List<String> locations) {
     this.locations = locations;
   }
+
+  public String getInstitutionPrefix() { return institutionPrefix; }
 
   @Override
   public boolean equals(java.lang.Object o) {

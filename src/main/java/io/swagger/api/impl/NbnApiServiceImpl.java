@@ -4,12 +4,11 @@ import io.swagger.api.ApiResponseMessage;
 import io.swagger.api.NbnApiService;
 import io.swagger.api.NotFoundException;
 import io.swagger.api.impl.jdbc.Dao;
+import io.swagger.api.impl.jdbc.Dao.SqlResponse;
 import io.swagger.model.NbnLocationsObject;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,11 +18,34 @@ public class NbnApiServiceImpl extends NbnApiService {
 
   Dao dao = new Dao();
   NbnValidator nbnValidator = new NbnValidator();
+  LocationValidator locationValidator = new LocationValidator();
 
   @Override
   public Response createNbnLocations(NbnLocationsObject body, SecurityContext securityContext) throws NotFoundException {
-    // do some magic!
-    return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+
+    Response response = null;
+    boolean nbnIsValid = nbnValidator.validate(body.getIdentifier());
+    boolean locationsValid = locationValidator.validateAllLocations(body.getLocations());
+
+    if (nbnIsValid && locationsValid) {
+      SqlResponse result = dao.createNbn(body);
+      switch (result) {
+        case OK:
+          response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
+          break;
+        case DUPLICATE:
+          response = Response.status(409).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists")).build();
+          break;
+          //Todo: what is response for general SQL insert failure?
+        case FAILURE:
+          response = Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Nbn could not be registered")).build();
+          break;
+      }
+    }
+    else {
+      response = Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier pattern or location uri(s) supplied")).build();
+    }
+    return response;
   }
 
   @Override
