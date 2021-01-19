@@ -1,0 +1,144 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+-- -----------------------------------------------------
+-- Schema nbnresolver
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema nbnresolver
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `nbnresolver` DEFAULT CHARACTER SET utf8 ;
+USE `nbnresolver` ;
+
+-- -----------------------------------------------------
+-- Table `nbnresolver`.`identifier`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `nbnresolver`.`identifier` (
+  `identifier_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `identifier_value` VARCHAR(510) NOT NULL,
+  PRIMARY KEY (`identifier_id`),
+  UNIQUE INDEX `identifier_value_UNIQUE` (`identifier_value` ASC) VISIBLE,
+  INDEX `idxIdentifierValue` (`identifier_value` ASC) VISIBLE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 3299
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `nbnresolver`.`location`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `nbnresolver`.`location` (
+  `location_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `location_url` VARCHAR(1022) NOT NULL,
+  PRIMARY KEY (`location_id`),
+  UNIQUE INDEX `location_url_UNIQUE` (`location_url` ASC) VISIBLE,
+  INDEX `idxLocationUrl` (`location_url` ASC) VISIBLE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 4587
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `nbnresolver`.`identifier_location`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `nbnresolver`.`identifier_location` (
+  `location_id` BIGINT(20) NOT NULL,
+  `identifier_id` BIGINT(20) NOT NULL,
+  `last_modified` TIMESTAMP(4) NOT NULL DEFAULT CURRENT_TIMESTAMP(4),
+  `isFailover` TINYINT(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`identifier_id`, `location_id`),
+  INDEX `FkLocation_idx` (`location_id` ASC) VISIBLE,
+  CONSTRAINT `FkIdentifier`
+    FOREIGN KEY (`identifier_id`)
+    REFERENCES `nbnresolver`.`identifier` (`identifier_id`),
+  CONSTRAINT `FkLocation`
+    FOREIGN KEY (`location_id`)
+    REFERENCES `nbnresolver`.`location` (`location_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `nbnresolver`.`registrant`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `nbnresolver`.`registrant` (
+  `registrant_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `registrant_groupid` VARCHAR(255) NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`registrant_id`),
+  UNIQUE INDEX `registrant_groupid_UNIQUE` (`registrant_groupid` ASC) VISIBLE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 6
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `nbnresolver`.`identifier_registrant`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `nbnresolver`.`identifier_registrant` (
+  `identifier_id` BIGINT(20) NOT NULL,
+  `registrant_id` INT(11) NOT NULL,
+  PRIMARY KEY (`identifier_id`, `registrant_id`),
+  INDEX `FK_tbl_registrant_idx` (`registrant_id` ASC) VISIBLE,
+  CONSTRAINT `FK_tbl_identifier`
+    FOREIGN KEY (`identifier_id`)
+    REFERENCES `nbnresolver`.`identifier` (`identifier_id`),
+  CONSTRAINT `FK_tbl_registrant`
+    FOREIGN KEY (`registrant_id`)
+    REFERENCES `nbnresolver`.`registrant` (`registrant_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `nbnresolver`.`location_registrant`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `nbnresolver`.`location_registrant` (
+  `location_id` BIGINT(20) NOT NULL,
+  `registrant_id` INT(11) NOT NULL,
+  PRIMARY KEY (`location_id`, `registrant_id`),
+  INDEX `FK_Registrant_idx` (`registrant_id` ASC) VISIBLE,
+  CONSTRAINT `FK_Location`
+    FOREIGN KEY (`location_id`)
+    REFERENCES `nbnresolver`.`location` (`location_id`),
+  CONSTRAINT `FK_Registrant`
+    FOREIGN KEY (`registrant_id`)
+    REFERENCES `nbnresolver`.`registrant` (`registrant_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+USE `nbnresolver` ;
+
+-- -----------------------------------------------------
+-- procedure insertNbnObject
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `nbnresolver`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insertNbnObject`(IN nbn_value VARCHAR(100),IN nbn_location VARCHAR(150))
+BEGIN
+
+START TRANSACTION;
+
+INSERT INTO identifier (identifier.identifier_value) VALUES (nbn_value);
+INSERT INTO location (location.location_url) VALUES (nbn_location);
+INSERT INTO identifier_registrant (identifier_registrant.identifier_id, identifier_registrant.registrant_id) VALUES ((SELECT identifier.identifier_id from identifier WHERE identifier_value = nbn_value), 1 );
+INSERT INTO location_registrant (location_registrant.location_id, location_registrant.registrant_id) VALUES ((SELECT location.location_id from location WHERE location.location_url = nbn_location), 1 );
+INSERT INTO identifier_location (identifier_location.location_id, identifier_location.identifier_id, identifier_location.last_modified, identifier_location.isFailover) VALUES ((SELECT location.location_id from location WHERE location.location_url = nbn_location) , (SELECT identifier.identifier_id from identifier WHERE identifier.identifier_value = nbn_value) , NOW() , 0);
+        
+COMMIT;
+
+END$$
+
+DELIMITER ;
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
