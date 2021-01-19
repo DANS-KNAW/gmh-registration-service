@@ -28,7 +28,7 @@ public class NbnApiServiceImpl extends NbnApiService {
     boolean locationsValid = locationValidator.validateAllLocations(body.getLocations());
 
     if (nbnIsValid && locationsValid) {
-      SqlResponse result = dao.createNbn(body);
+      SqlResponse result = dao.createOrUpdateNbn(body);
       switch (result) {
         case OK:
           response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();

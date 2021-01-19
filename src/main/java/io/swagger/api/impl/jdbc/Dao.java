@@ -28,8 +28,55 @@ public class Dao {
   public Dao() {
   }
 
-  public static SqlResponse createNbn(NbnLocationsObject nbnLocationsObject) {
-    SqlResponse result;
+  public static boolean getIdentifier(String identifier) {
+
+    boolean idExists = false;
+    //    Get rid of the fragment part:
+    String unfragmented = identifier;
+    if (identifier != null && identifier.contains("#")) {
+      unfragmented = identifier.split("#")[0];
+    }
+
+    logger.info("Getting location(s) for: " + unfragmented);
+
+    ResultSet rs = null;
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+
+    try {
+      conn = PooledDataSource.getConnection();
+      pstmt = conn.prepareStatement("SELECT identifier_id FROM identifier WHERE identifier.identifier_value = ?;");
+      pstmt.setString(1, unfragmented);
+      rs = pstmt.executeQuery();
+
+      if (rs.next()) {
+        idExists = true;
+      }
+    }
+    catch (SQLException e) {
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (pstmt != null) {
+          pstmt.close();
+        }
+        if (conn != null) {
+          conn.close();
+        }
+      }
+      catch (Exception ex) {
+        //ignored
+      }
+    }
+    return idExists;
+  }
+
+  //TODO: implement rollback: combine transactions in stored procedures
+  public static SqlResponse createOrUpdateNbn(NbnLocationsObject nbnLocationsObject) {
+    SqlResponse result = null;
     String identifier = nbnLocationsObject.getIdentifier();
     //    Get rid of the fragment part:
     String unfragmented = identifier;
@@ -44,12 +91,21 @@ public class Dao {
       conn = PooledDataSource.getConnection();
       conn.setAutoCommit(false);
 
-      String insertNbnStoredProcedureQuery = "{call insertNbnObject(?, ?)}";
-
-      CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
-      callableStatement.setString(1, unfragmented);
-      callableStatement.setString(2, nbnLocationsObject.getLocations().get(0));
-      result = (callableStatement.executeUpdate()) == 0 ? OK : FAILURE;
+      for (String location : nbnLocationsObject.getLocations()) {
+        String insertNbnStoredProcedureQuery = getIdentifier(identifier) ? "{call insertNbnLocation(?, ?)}" : "{call insertNbnObject(?, ?)}";
+        CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
+        callableStatement.setString(1, unfragmented);
+        //TODO: add support for multiple locations
+        callableStatement.setString(2, location);
+        int sqlresult = (callableStatement.executeUpdate());
+        if (sqlresult == 0) {
+          result = OK;
+        }
+        else {
+          result = FAILURE;
+          break;
+        }
+      }
     }
     catch (SQLException e) {
       if (e instanceof SQLIntegrityConstraintViolationException) {
