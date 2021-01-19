@@ -16,11 +16,12 @@ import java.util.List;
 import static io.swagger.api.impl.jdbc.Dao.SqlResponse.DUPLICATE;
 import static io.swagger.api.impl.jdbc.Dao.SqlResponse.FAILURE;
 import static io.swagger.api.impl.jdbc.Dao.SqlResponse.OK;
+import static io.swagger.api.impl.jdbc.Dao.SqlResponse.UPDATE;
 
 public class Dao {
 
   public enum SqlResponse {
-    OK, FAILURE, DUPLICATE
+    OK, FAILURE, DUPLICATE, UPDATE
   }
 
   private static final Logger logger = LoggerFactory.getLogger(Dao.class);
@@ -90,6 +91,7 @@ public class Dao {
     try {
       conn = PooledDataSource.getConnection();
       conn.setAutoCommit(false);
+      boolean idExists = getIdentifier(identifier);
 
       for (String location : nbnLocationsObject.getLocations()) {
         String insertNbnStoredProcedureQuery = getIdentifier(identifier) ? "{call insertNbnLocation(?, ?)}" : "{call insertNbnObject(?, ?)}";
@@ -99,7 +101,11 @@ public class Dao {
         callableStatement.setString(2, location);
         int sqlresult = (callableStatement.executeUpdate());
         if (sqlresult == 0) {
-          result = OK;
+          if(idExists){
+            result = UPDATE;
+          }else {
+            result = OK;
+          }
         }
         else {
           result = FAILURE;

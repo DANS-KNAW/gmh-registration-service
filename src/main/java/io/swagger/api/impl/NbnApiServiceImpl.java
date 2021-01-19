@@ -33,10 +33,14 @@ public class NbnApiServiceImpl extends NbnApiService {
         case OK:
           response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
           break;
+        //TODO refactor
+        case UPDATE:
+          response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
+          break;
         case DUPLICATE:
           response = Response.status(409).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists")).build();
           break;
-          //Todo: what is response for general SQL insert failure?
+        //Todo: what is response for general SQL insert failure?
         case FAILURE:
           response = Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Nbn could not be registered")).build();
           break;
@@ -85,7 +89,27 @@ public class NbnApiServiceImpl extends NbnApiService {
 
   @Override
   public Response updateNbnRecord(List<String> body, String identifier, SecurityContext securityContext) throws NotFoundException {
-    // do some magic!
-    return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+    Response response = null;
+    NbnLocationsObject nbnLocationsObject = new NbnLocationsObject();
+    nbnLocationsObject.setIdentifier(identifier);
+    nbnLocationsObject.setLocations(body);
+    SqlResponse result = dao.createOrUpdateNbn(nbnLocationsObject);
+    switch (result) {
+      case UPDATE:
+        response = Response.status(200).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "OK (updated existing)")).build();
+        break;
+      case OK:
+        response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
+        break;
+      case DUPLICATE:
+        response = Response.status(409).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists")).build();
+        break;
+      //Todo: what is response for general SQL insert failure?
+      case FAILURE:
+        response = Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Nbn could not be registered")).build();
+        break;
+    }
+    return response;
   }
+
 }
