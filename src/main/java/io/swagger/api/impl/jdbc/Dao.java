@@ -180,6 +180,46 @@ public class Dao {
     return locations;
   }
 
+  public static List<String> getNbnByLocation(String location) {
+    List<String> nbns = new ArrayList<>();
+
+    logger.info("Getting nbn(s) for: " + location);
+
+    ResultSet rs = null;
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+
+    try {
+      conn = PooledDataSource.getConnection();
+      pstmt = conn.prepareStatement("SELECT I.identifier_value FROM identifier I JOIN identifier_location IL ON I.identifier_id = IL.identifier_id JOIN location L ON L.location_id = IL.location_id WHERE L.location_url = ? ;");
+      pstmt.setString(1, location);
+      rs = pstmt.executeQuery();
+
+      while (rs.next()) {
+        nbns.add(rs.getString(1));
+      }
+    }
+    catch (SQLException e) {
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (pstmt != null) {
+          pstmt.close();
+        }
+        if (conn != null) {
+          conn.close();
+        }
+      }
+      catch (Exception ex) {
+        //ignored
+      }
+    }
+    return nbns;
+  }
+
 }
 
 
