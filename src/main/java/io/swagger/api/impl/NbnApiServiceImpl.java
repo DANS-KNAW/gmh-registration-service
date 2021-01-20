@@ -74,7 +74,8 @@ public class NbnApiServiceImpl extends NbnApiService {
     if (nbnValidator.validate(identifier)) {
       List<String> locations = dao.getLocations(identifier);
       if (locations.isEmpty()) {
-        return Response.status(404).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Supplied URN:NBN identifier not found")).build();
+        //TODO: add identifier in msg everywhere
+        return Response.status(404).entity(new ApiResponseMessage(ApiResponseMessage.WARNING, "Supplied URN:NBN identifier not found")).build();
       }
       else {
         nbnRecord.put("identifier", identifier);
@@ -85,6 +86,7 @@ public class NbnApiServiceImpl extends NbnApiService {
     else {
       return Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier supplied")).build();
     }
+    //TODO: als SQL server down is geef een 500 (?) terug
   }
 
   @Override
