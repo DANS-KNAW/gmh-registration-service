@@ -10,9 +10,8 @@ info:
   license:
     name: Apache License 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  title: NBN Resolver
+  title: NBN:Resolver
   version: 0.1.0
-
 externalDocs:
 
   description: NBN Resolver on GitHub
@@ -147,6 +146,28 @@ paths:
           description: Object (location) not found
       tags:
         - Location
+
+  /authentication:
+    put:
+      summary: 'Authenticates'
+      description: 'issues ttoken'
+      operationId: 'authenticate'
+      requestBody:
+        required: true
+        description: A json object with username and password
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Location'
+      responses:
+        '200':
+          description: OK (updated existing)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      tags:
+        - URN:NBN identifier
 
 security:
   - UserLogin: []

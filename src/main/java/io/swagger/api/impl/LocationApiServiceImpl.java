@@ -3,6 +3,7 @@ package io.swagger.api.impl;
 import io.swagger.api.ApiResponseMessage;
 import io.swagger.api.LocationApiService;
 import io.swagger.api.NotFoundException;
+import io.swagger.api.impl.authentication.Secured;
 import io.swagger.api.impl.jdbc.Dao;
 
 import javax.ws.rs.core.Response;
@@ -17,6 +18,7 @@ public class LocationApiServiceImpl extends LocationApiService {
   Response response;
 
   @Override
+  @Secured
   public Response getNbnByLocation(String location, SecurityContext securityContext) throws NotFoundException {
     Response response = null;
     List<String> result = null;
