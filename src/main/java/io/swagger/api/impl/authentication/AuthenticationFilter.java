@@ -1,33 +1,18 @@
 package io.swagger.api.impl.authentication;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.swagger.api.AuthenticationApiService;
-import io.swagger.api.impl.AuthenticationApiServiceImpl;
-import io.swagger.model.Credentials;
-import org.glassfish.jersey.inject.hk2.RequestContext;
 
 import javax.annotation.Priority;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.inject.Inject;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 
 import static io.jsonwebtoken.impl.crypto.MacProvider.generateKey;
-import static io.swagger.api.impl.authentication.AuthUtil.getSecretKey;
+import static io.swagger.api.impl.authentication.KeyUtil.getSecretKey;
 
 @Secured
 @Provider
@@ -36,9 +21,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
   private static final String REALM = "example";
   private static final String AUTHENTICATION_SCHEME = "Bearer";
-  KeystoreUtil keystoreUtil = new KeystoreUtil();
-
-
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -88,16 +70,12 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     // Validate the token
 
     try {
-
       // Validate the token
       Jwts.parser()
           .setSigningKey(getSecretKey())
           .parseClaimsJws(token);
-      System.out.println("#### valid token : " + token);
-
     }
     catch (Exception e) {
-      System.out.println("#### invalid token : " + token);
       abortWithUnauthorized(requestContext);
     }
   }

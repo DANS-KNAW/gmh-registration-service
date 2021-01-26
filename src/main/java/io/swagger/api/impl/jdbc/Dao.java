@@ -1,6 +1,7 @@
 package io.swagger.api.impl.jdbc;
 
 import io.swagger.model.NbnLocationsObject;
+import io.swagger.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +28,50 @@ public class Dao {
   private static final Logger logger = LoggerFactory.getLogger(Dao.class);
 
   public Dao() {
+  }
+
+  public static User getUser(String username, String password) throws Exception {
+    User user = null;
+    ResultSet rs = null;
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+
+    try {
+      conn = PooledDataSource.getConnection();
+      pstmt = conn.prepareStatement("SELECT username, password, org_prefix FROM nbnresolver.credentials WHERE username = ? AND password = ?;");
+      pstmt.setString(1, username);
+      pstmt.setString(2, password);
+      rs = pstmt.executeQuery();
+
+      if(!rs.next()){
+        throw new InvalidCredentialsException("Provided credentials were invalid");
+      }
+
+      while (rs.next()) {
+        user.setUserName(rs.getString(1));
+        user.setPassword(rs.getString(2));
+        user.setOrgPrefix(rs.getString(3));
+      }
+    }
+    catch (SQLException e) {
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (pstmt != null) {
+          pstmt.close();
+        }
+        if (conn != null) {
+          conn.close();
+        }
+      }
+      catch (Exception ex) {
+        //ignored
+      }
+    }
+    return user;
   }
 
   public static boolean getIdentifier(String identifier) {
@@ -101,9 +146,10 @@ public class Dao {
         callableStatement.setString(2, location);
         int sqlresult = (callableStatement.executeUpdate());
         if (sqlresult == 0) {
-          if(idExists){
+          if (idExists) {
             result = UPDATE;
-          }else {
+          }
+          else {
             result = OK;
           }
         }

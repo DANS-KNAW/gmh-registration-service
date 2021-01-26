@@ -21,7 +21,7 @@ import java.util.Objects;
 /**
  * Credentials
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-22T09:23:35.355Z[GMT]")public class Credentials implements Principal {
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-22T09:23:35.355Z[GMT]")public class Credentials {
   @JsonProperty("username")
   private String username = null;
 
@@ -95,11 +95,6 @@ import java.util.Objects;
     sb.append("    password: ").append(toIndentedString(password)).append("\n");
     sb.append("}");
     return sb.toString();
-  }
-
-  @Override
-  public String getName() {
-    return this.username;
   }
 
   /**

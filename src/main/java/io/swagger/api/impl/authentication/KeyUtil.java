@@ -5,8 +5,9 @@ import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-public class AuthUtil {
+public class KeyUtil {
 
+ //TODO: change key periodically
   private static SecretKey secretKey;
 
   static {

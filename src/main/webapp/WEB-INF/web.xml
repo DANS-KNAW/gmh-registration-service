@@ -46,8 +46,4 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-    <listener>
-        <listener-class>io.swagger.api.StartupListener</listener-class>
-    </listener>
-
 </web-app>
