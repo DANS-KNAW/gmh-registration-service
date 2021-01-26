@@ -1,4 +1,4 @@
-package io.swagger.api.impl;
+package io.swagger.api.impl.validation;
 
 import java.util.List;
 import java.util.regex.Matcher;

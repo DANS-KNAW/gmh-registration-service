@@ -1,4 +1,4 @@
-package io.swagger.api.impl;
+package io.swagger.api.impl.validation;
 
 /**
  * Copyright (C) 2020 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)

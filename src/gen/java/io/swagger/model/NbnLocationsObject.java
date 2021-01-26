@@ -12,47 +12,32 @@
 
 package io.swagger.model;
 
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import javax.validation.constraints.*;
+import javax.validation.Valid;
 
 /**
  * NbnLocationsObject
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-08T12:34:19.815Z[GMT]")
-public class NbnLocationsObject {
-
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-22T09:23:35.355Z[GMT]")public class NbnLocationsObject   {
   @JsonProperty("identifier")
   private String identifier = null;
 
   @JsonProperty("locations")
   private List<String> locations = null;
 
-  private String institutionPrefix = null;
-
   public NbnLocationsObject identifier(String identifier) {
     this.identifier = identifier;
-    this.institutionPrefix = getInstitutionPrefix(identifier);
     return this;
-  }
-
-  private String getInstitutionPrefix(String identifier) {
-    Pattern pattern = Pattern.compile("(ui:[\\d]{2})");
-    Matcher matcher = pattern.matcher(identifier);
-    if (matcher.find()) {
-      return matcher.group(1);
-    }
-    return "";
   }
 
   /**
    * Get identifier
-   *
    * @return identifier
    **/
   @JsonProperty("identifier")
@@ -80,7 +65,6 @@ public class NbnLocationsObject {
 
   /**
    * Get locations
-   *
    * @return locations
    **/
   @JsonProperty("locations")
@@ -93,7 +77,6 @@ public class NbnLocationsObject {
     this.locations = locations;
   }
 
-  public String getInstitutionPrefix() { return institutionPrefix; }
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -104,13 +87,15 @@ public class NbnLocationsObject {
       return false;
     }
     NbnLocationsObject nbnLocationsObject = (NbnLocationsObject) o;
-    return Objects.equals(this.identifier, nbnLocationsObject.identifier) && Objects.equals(this.locations, nbnLocationsObject.locations);
+    return Objects.equals(this.identifier, nbnLocationsObject.identifier) &&
+        Objects.equals(this.locations, nbnLocationsObject.locations);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(identifier, locations);
   }
+
 
   @Override
   public String toString() {

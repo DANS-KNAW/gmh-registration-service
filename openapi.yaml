@@ -21,6 +21,8 @@ paths:
 
   /nbn:
     post:
+      security:
+        - BearerAuth: []
       summary: 'Registers a new URN:NBN identifier with associated locations.'
       description: 'Registers a new URN:NBN associated with a prioritized list of locations. Multiple locations are prioritized in respective order. The first location is the preferred. The second is failover, etc. <br>The identifier must have a prefix that matches the authenticated user.'
       operationId: 'createNbnLocations'
@@ -42,7 +44,8 @@ paths:
           description: URN:NBN identifier is valid, but does not match the prefix of the authenticated user
         '409':
           description: Conflict, resource already exists
-
+        '500':
+          description: Internal server error
       tags:
         - URN:NBN identifier
 
@@ -50,6 +53,8 @@ paths:
     parameters:
       - $ref: '#/components/parameters/nbn_identifier'
     get:
+      security:
+        - BearerAuth: []
       summary: 'Returns URN:NBN object (urn:nbn+locations) for this {identifier}.'
       description: 'Returns URN:NBN object (urn:nbn+locations) for this {identifier}.<br>The identifier must have a prefix that matches the authenticated user. HTTP 404 otherwise.'
       operationId: 'getNbnRecord'
@@ -68,10 +73,14 @@ paths:
           description: URN:NBN-prefix is not registered to this user
         '404':
           description: Supplied URN:NBN identifier not found
+        '500':
+          description: Internal server error
       tags:
         - URN:NBN identifier
 
     put:
+      security:
+        - BearerAuth: []
       summary: 'Updates an existing URN:NBN {identifier} or registers a new URN:NBN {identifier} associated with a prioritized list of locations.'
       description: 'Updates or registers a (new) URN:NBN associated with a prioritized list of locations. Multiple locations are prioritized in respective order. The first location is the preferred. The second is failover, etc. <br>Identifiers must have a prefix that matches the authenticated user.'
       operationId: 'updateNbnRecord'
@@ -95,6 +104,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           description: URN:NBN-prefix is not registered to this user
+        '500':
+          description: Internal server error
       tags:
         - URN:NBN identifier
 
@@ -102,6 +113,8 @@ paths:
     parameters:
       - $ref: '#/components/parameters/nbn_identifier'
     get:
+      security:
+        - BearerAuth: []
       summary: 'Returns registered locations for this URN:NBN {identifier}.'
       description: 'Returns all registered locations for this {identifier}.<br>The identifier must have a prefix that matches the authenticated user. HTTP 404 otherwise.'
       operationId: 'getLocationsByNbn'
@@ -120,6 +133,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Supplied URN:NBN identifier not found
+        '500':
+          description: Internal server error
       tags:
         - URN:NBN identifier
 
@@ -128,6 +143,8 @@ paths:
     parameters:
       - $ref: '#/components/parameters/uri_location'
     get:
+      security:
+        - BearerAuth: []
       operationId: getNbnByLocation
       summary: Returns URN:NBN identifier(s) registered for this location.
       description: Returns URN:NBN identifier(s) associated with this location, if at least one of them is registered to the authenticated user.
@@ -144,13 +161,18 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Object (location) not found
+        '500':
+          description: Internal server error
       tags:
         - Location
 
+
   /authentication:
-    put:
-      summary: 'Authenticates'
-      description: 'issues ttoken'
+    post:
+      security:
+        - UserLogin: []
+      summary: 'Authenticates a user'
+      description: 'Authenticates a user and generates a JWT to be used for subsequest requests.'
       operationId: 'authenticate'
       requestBody:
         required: true
@@ -158,19 +180,16 @@ paths:
         content:
           application/json:
             schema:
-              type: array
+              type: object
               items:
-                $ref: '#/components/schemas/Location'
+              $ref: '#/components/schemas/Credentials'
       responses:
         '200':
-          description: OK (updated existing)
+          description: OK (login successful)
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-      tags:
-        - URN:NBN identifier
-
-security:
-  - UserLogin: []
+        '500':
+          description: Internal server error
 
 servers:
   - url: http://localhost:8009/nbn
@@ -233,6 +252,17 @@ components:
       example:
         "https://ir.nl/publication/example"
 
+    Credentials:
+      type: object
+      properties:
+        username:
+          type: string
+          example: "username"
+        password:
+          type: string
+          example: "password"
+
+
   securitySchemes:
     UserLogin:
       scheme: basic
@@ -242,8 +272,3 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key

@@ -1,8 +1,6 @@
 package io.swagger.api;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-08T12:34:19.815Z[GMT]")
-public class StringUtil {
-
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-22T09:23:35.355Z[GMT]")public class StringUtil {
   /**
    * Check if the given array contains the given value (with case-insensitive comparison).
    *
@@ -12,10 +10,8 @@ public class StringUtil {
    */
   public static boolean containsIgnoreCase(String[] array, String value) {
     for (String str : array) {
-      if (value == null && str == null)
-        return true;
-      if (value != null && value.equalsIgnoreCase(str))
-        return true;
+      if (value == null && str == null) return true;
+      if (value != null && value.equalsIgnoreCase(str)) return true;
     }
     return false;
   }
@@ -33,8 +29,7 @@ public class StringUtil {
    */
   public static String join(String[] array, String separator) {
     int len = array.length;
-    if (len == 0)
-      return "";
+    if (len == 0) return "";
 
     StringBuilder out = new StringBuilder();
     out.append(array[0]);

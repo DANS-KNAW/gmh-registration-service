@@ -3,9 +3,10 @@ package io.swagger.api.impl;
 import io.swagger.api.ApiResponseMessage;
 import io.swagger.api.NbnApiService;
 import io.swagger.api.NotFoundException;
-import io.swagger.api.impl.authentication.Secured;
 import io.swagger.api.impl.jdbc.Dao;
 import io.swagger.api.impl.jdbc.Dao.SqlResponse;
+import io.swagger.api.impl.validation.LocationValidator;
+import io.swagger.api.impl.validation.NbnValidator;
 import io.swagger.model.NbnLocationsObject;
 
 import javax.ws.rs.core.Response;
@@ -22,7 +23,6 @@ public class NbnApiServiceImpl extends NbnApiService {
   LocationValidator locationValidator = new LocationValidator();
 
   @Override
-  @Secured
   public Response createNbnLocations(NbnLocationsObject body, SecurityContext securityContext) throws NotFoundException {
 
     Response response = null;
@@ -55,7 +55,6 @@ public class NbnApiServiceImpl extends NbnApiService {
   }
 
   @Override
-  @Secured
   public Response getLocationsByNbn(String identifier, SecurityContext securityContext) throws NotFoundException {
     if (nbnValidator.validate(identifier)) {
       List<String> locations = dao.getLocations(identifier);
@@ -72,7 +71,6 @@ public class NbnApiServiceImpl extends NbnApiService {
   }
 
   @Override
-  @Secured
   public Response getNbnRecord(String identifier, SecurityContext securityContext) throws NotFoundException {
     Map<String, Object> nbnRecord = new HashMap<>();
     if (nbnValidator.validate(identifier)) {
@@ -94,7 +92,6 @@ public class NbnApiServiceImpl extends NbnApiService {
   }
 
   @Override
-  @Secured
   public Response updateNbnRecord(List<String> body, String identifier, SecurityContext securityContext) throws NotFoundException {
     Response response = null;
     NbnLocationsObject nbnLocationsObject = new NbnLocationsObject();
