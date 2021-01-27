@@ -24,28 +24,34 @@ public class NbnApiServiceImpl extends NbnApiService {
 
   @Override
   public Response createNbnLocations(NbnLocationsObject body, SecurityContext securityContext) throws NotFoundException {
+    System.out.println("USER_PRIBCIPLA: " + securityContext.getUserPrincipal());
 
     Response response = null;
     boolean nbnIsValid = nbnValidator.validate(body.getIdentifier());
     boolean locationsValid = locationValidator.validateAllLocations(body.getLocations());
 
     if (nbnIsValid && locationsValid) {
-      SqlResponse result = dao.createOrUpdateNbn(body);
-      switch (result) {
-        case OK:
-          response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
-          break;
-        //TODO refactor
-        case UPDATE:
-          response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
-          break;
-        case DUPLICATE:
-          response = Response.status(409).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists")).build();
-          break;
-        //Todo: what is response for general SQL insert failure?
-        case FAILURE:
-          response = Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Nbn could not be registered")).build();
-          break;
+      if (nbnValidator.prefixMatches(body.getIdentifier(), securityContext.getUserPrincipal().getName())) {
+        SqlResponse result = dao.createOrUpdateNbn(body);
+        switch (result) {
+          case OK:
+            response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
+            break;
+          //TODO refactor
+          case UPDATE:
+            response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
+            break;
+          case DUPLICATE:
+            response = Response.status(409).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists")).build();
+            break;
+          //Todo: what is response for general SQL insert failure?
+          case FAILURE:
+            response = Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Nbn could not be registered")).build();
+            break;
+        }
+      }
+      else {
+        response = Response.status(403).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "URN:NBN identifier is valid, but does not match the prefix of the authenticated user")).build();
       }
     }
     else {
@@ -88,7 +94,6 @@ public class NbnApiServiceImpl extends NbnApiService {
     else {
       return Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier supplied")).build();
     }
-    //TODO: als SQL server down is geef een 500 (?) terug
   }
 
   @Override
@@ -97,21 +102,28 @@ public class NbnApiServiceImpl extends NbnApiService {
     NbnLocationsObject nbnLocationsObject = new NbnLocationsObject();
     nbnLocationsObject.setIdentifier(identifier);
     nbnLocationsObject.setLocations(body);
-    SqlResponse result = dao.createOrUpdateNbn(nbnLocationsObject);
-    switch (result) {
-      case UPDATE:
-        response = Response.status(200).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "OK (updated existing)")).build();
-        break;
-      case OK:
-        response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
-        break;
-      case DUPLICATE:
-        response = Response.status(409).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists")).build();
-        break;
-      //Todo: what is response for general SQL insert failure?
-      case FAILURE:
-        response = Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Nbn could not be registered")).build();
-        break;
+    if (nbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())) {
+
+      SqlResponse result = dao.createOrUpdateNbn(nbnLocationsObject);
+      switch (result) {
+        case UPDATE:
+          response = Response.status(200).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "OK (updated existing)")).build();
+          break;
+        case OK:
+          response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
+          break;
+        case DUPLICATE:
+          response = Response.status(409).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists")).build();
+          break;
+        //Todo: what is response for general SQL insert failure?
+        case FAILURE:
+          response = Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Nbn could not be registered")).build();
+          break;
+      }
+    }
+    else {
+      response = Response.status(403).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "URN:NBN identifier is valid, but does not match the prefix of the authenticated user")).build();
+
     }
     return response;
   }

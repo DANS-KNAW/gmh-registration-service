@@ -8,10 +8,11 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.security.Principal;
 
-import static io.jsonwebtoken.impl.crypto.MacProvider.generateKey;
 import static io.swagger.api.impl.authentication.KeyUtil.getSecretKey;
 
 @Secured
@@ -46,6 +47,31 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     catch (Exception e) {
       abortWithUnauthorized(requestContext);
     }
+
+    final SecurityContext securityContext = requestContext.getSecurityContext();
+    requestContext.setSecurityContext(new SecurityContext() {
+
+      @Override
+      public Principal getUserPrincipal() {
+        return () -> getOrgPrefix(token);
+      }
+
+      @Override
+      public boolean isUserInRole(String s) {
+        return false;
+      }
+
+      //TODO" implement
+      @Override
+      public boolean isSecure() {
+        return true;
+      }
+
+      @Override
+      public String getAuthenticationScheme() {
+        return "Token-Based-Auth-Scheme";
+      }
+    });
   }
 
   private boolean isTokenBasedAuthentication(String authorizationHeader) {
@@ -74,9 +100,18 @@ public class AuthenticationFilter implements ContainerRequestFilter {
       Jwts.parser()
           .setSigningKey(getSecretKey())
           .parseClaimsJws(token);
+
     }
     catch (Exception e) {
       abortWithUnauthorized(requestContext);
     }
+  }
+
+  private String getOrgPrefix(String token) {
+    return Jwts.parser()
+        .setSigningKey(getSecretKey())
+        .parseClaimsJws(token)
+        .getBody()
+        .getId();
   }
 }

@@ -21,17 +21,31 @@ import java.util.regex.Pattern;
 
 public class NbnValidator {
 
-  public static final String NBN_PATTERN = "^[uU][rR][nN]:[nN][bB][nN]:[nN][lL](:([a-zA-Z]{2}))?:\\d{2}-.+";
-  private Pattern pattern;
-  private Matcher matcher;
+  private static final String NBN_PATTERN = "^[uU][rR][nN]:[nN][bB][nN]:[nN][lL](:([a-zA-Z]{2}))?:\\d{2}-.+";
+  private static final String ORG_PREFIX_PATTERN = "([a-zA-Z]{2}):\\d{2}";
 
   public NbnValidator() {
-    pattern = Pattern.compile(NBN_PATTERN);
   }
 
   public boolean validate(String nbn) {
-    matcher = pattern.matcher(nbn);
+    Pattern pattern = Pattern.compile(NBN_PATTERN);
+    Matcher matcher = pattern.matcher(nbn);
     return matcher.matches();
+  }
 
+  public boolean prefixMatches(String nbn, String orgPrefix) {
+    System.out.println("nbn:  "+ nbn + "\n org_prefix:  " + orgPrefix);
+    boolean matches = false;
+    Pattern pattern = Pattern.compile(ORG_PREFIX_PATTERN);
+    Matcher matcher = pattern.matcher(nbn);
+    if (matcher.find()) {
+      if (matcher.group().equalsIgnoreCase(orgPrefix)) {
+        matches = true;
+      }
+    }
+    else {
+      matches = false;
+    }
+    return matches;
   }
 }

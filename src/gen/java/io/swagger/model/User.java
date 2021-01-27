@@ -6,6 +6,9 @@ public class User {
   private String userName;
   private String password;
 
+  public User() {
+  }
+
   public User(String orgPrefix, String userName, String password) {
     this.orgPrefix = orgPrefix;
     this.userName = userName;

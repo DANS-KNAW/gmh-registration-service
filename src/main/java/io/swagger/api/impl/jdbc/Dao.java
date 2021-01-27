@@ -38,21 +38,21 @@ public class Dao {
 
     try {
       conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT username, password, org_prefix FROM nbnresolver.credentials WHERE username = ? AND password = ?;");
+      pstmt = conn.prepareStatement("SELECT C.username, C.password, C.org_prefix FROM nbnresolver.credentials C WHERE C.username = ? AND C.password = ?;");
       pstmt.setString(1, username);
       pstmt.setString(2, password);
       rs = pstmt.executeQuery();
-
-      if(!rs.next()){
+      if (!rs.next()) {
         throw new InvalidCredentialsException("Provided credentials were invalid");
       }
-
-      while (rs.next()) {
+      else {
+        user = new User();
         user.setUserName(rs.getString(1));
         user.setPassword(rs.getString(2));
         user.setOrgPrefix(rs.getString(3));
       }
     }
+
     catch (SQLException e) {
     }
     finally {
