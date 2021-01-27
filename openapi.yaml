@@ -44,8 +44,6 @@ paths:
           description: URN:NBN identifier is valid, but does not match the prefix of the authenticated user
         '409':
           description: Conflict, resource already exists
-        '500':
-          description: Internal server error
       tags:
         - URN:NBN identifier
 
@@ -73,8 +71,6 @@ paths:
           description: URN:NBN-prefix is not registered to this user
         '404':
           description: Supplied URN:NBN identifier not found
-        '500':
-          description: Internal server error
       tags:
         - URN:NBN identifier
 
@@ -104,8 +100,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           description: URN:NBN-prefix is not registered to this user
-        '500':
-          description: Internal server error
       tags:
         - URN:NBN identifier
 
@@ -133,8 +127,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Supplied URN:NBN identifier not found
-        '500':
-          description: Internal server error
       tags:
         - URN:NBN identifier
 
@@ -161,8 +153,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Object (location) not found
-        '500':
-          description: Internal server error
       tags:
         - Location
 
@@ -188,8 +178,6 @@ paths:
           description: OK (login successful)
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          description: Internal server error
 
 servers:
   - url: http://localhost:8009/nbn
