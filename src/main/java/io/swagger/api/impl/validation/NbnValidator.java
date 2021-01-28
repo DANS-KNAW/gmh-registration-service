@@ -34,7 +34,6 @@ public class NbnValidator {
   }
 
   public boolean prefixMatches(String nbn, String orgPrefix) {
-    System.out.println("nbn:  "+ nbn + "\n org_prefix:  " + orgPrefix);
     boolean matches = false;
     Pattern pattern = Pattern.compile(ORG_PREFIX_PATTERN);
     Matcher matcher = pattern.matcher(nbn);

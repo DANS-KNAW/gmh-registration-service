@@ -24,8 +24,6 @@ public class NbnApiServiceImpl extends NbnApiService {
 
   @Override
   public Response createNbnLocations(NbnLocationsObject body, SecurityContext securityContext) throws NotFoundException {
-    System.out.println("USER_PRIBCIPLA: " + securityContext.getUserPrincipal());
-
     Response response = null;
     boolean nbnIsValid = nbnValidator.validate(body.getIdentifier());
     boolean locationsValid = locationValidator.validateAllLocations(body.getLocations());
