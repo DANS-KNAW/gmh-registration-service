@@ -1,6 +1,7 @@
 package io.swagger.api.impl.authentication;
 
 import io.jsonwebtoken.Jwts;
+import io.swagger.api.ApiResponseMessage;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -48,7 +49,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
       abortWithUnauthorized(requestContext);
     }
 
-    final SecurityContext securityContext = requestContext.getSecurityContext();
     requestContext.setSecurityContext(new SecurityContext() {
 
       @Override
@@ -84,9 +84,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
   private void abortWithUnauthorized(ContainerRequestContext requestContext) {
 
-    // Abort the filter chain with a 401 status code response
-    // The WWW-Authenticate header is sent along with the response
-    requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).header(HttpHeaders.WWW_AUTHENTICATE, AUTHENTICATION_SCHEME + " realm=\"" + REALM + "\"").build());
+    requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Token authorization failed.")).build());
   }
 
   private void validateToken(String token, ContainerRequestContext requestContext) throws Exception {
@@ -97,9 +95,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     try {
       // Validate the token
-      Jwts.parser()
-          .setSigningKey(getSecretKey())
-          .parseClaimsJws(token);
+      Jwts.parser().setSigningKey(getSecretKey()).parseClaimsJws(token);
 
     }
     catch (Exception e) {
@@ -108,10 +104,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
   }
 
   private String getOrgPrefix(String token) {
-    return Jwts.parser()
-        .setSigningKey(getSecretKey())
-        .parseClaimsJws(token)
-        .getBody()
-        .getId();
+    return Jwts.parser().setSigningKey(getSecretKey()).parseClaimsJws(token).getBody().getId();
   }
 }

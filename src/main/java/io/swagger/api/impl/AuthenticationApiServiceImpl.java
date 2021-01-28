@@ -2,6 +2,7 @@ package io.swagger.api.impl;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.swagger.api.ApiResponseMessage;
 import io.swagger.api.AuthenticationApiService;
 import io.swagger.api.NotFoundException;
 import io.swagger.api.impl.jdbc.Dao;
@@ -9,12 +10,14 @@ import io.swagger.model.Credentials;
 import io.swagger.model.User;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 
 import static io.swagger.api.impl.authentication.KeyUtil.getSecretKey;
+import static javax.ws.rs.core.Response.Status.*;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-22T09:23:35.355Z[GMT]")
 public class AuthenticationApiServiceImpl extends AuthenticationApiService {
@@ -40,7 +43,7 @@ public class AuthenticationApiServiceImpl extends AuthenticationApiService {
 
     }
     catch (Exception e) {
-      return Response.status(Response.Status.FORBIDDEN).build();
+      return Response.status(FORBIDDEN).entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Authentication failed: invalid credentials" )).build();
     }
   }
 

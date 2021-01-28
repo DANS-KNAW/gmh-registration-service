@@ -21,10 +21,6 @@ import static io.swagger.api.impl.jdbc.Dao.SqlResponse.UPDATE;
 
 public class Dao {
 
-  public enum SqlResponse {
-    OK, FAILURE, DUPLICATE, UPDATE
-  }
-
   private static final Logger logger = LoggerFactory.getLogger(Dao.class);
 
   public Dao() {
@@ -142,7 +138,6 @@ public class Dao {
         String insertNbnStoredProcedureQuery = getIdentifier(identifier) ? "{call insertNbnLocation(?, ?)}" : "{call insertNbnObject(?, ?)}";
         CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
         callableStatement.setString(1, unfragmented);
-        //TODO: add support for multiple locations
         callableStatement.setString(2, location);
         int sqlresult = (callableStatement.executeUpdate());
         if (sqlresult == 0) {
@@ -264,6 +259,10 @@ public class Dao {
       }
     }
     return nbns;
+  }
+
+  public enum SqlResponse {
+    OK, FAILURE, DUPLICATE, UPDATE
   }
 
 }

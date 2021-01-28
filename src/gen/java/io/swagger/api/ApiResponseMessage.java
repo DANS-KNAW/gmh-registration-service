@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @javax.xml.bind.annotation.XmlRootElement
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-08T12:34:19.815Z[GMT]")
 public class ApiResponseMessage {
+  //TODO: Do we want to use this class? The response body is not clear.
 
   public static final int ERROR = 1;
   public static final int WARNING = 2;

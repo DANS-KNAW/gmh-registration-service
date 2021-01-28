@@ -15,6 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static javax.ws.rs.core.Response.*;
+import static javax.ws.rs.core.Response.Status.*;
+
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-08T12:34:19.815Z[GMT]")
 public class NbnApiServiceImpl extends NbnApiService {
 
@@ -29,31 +32,32 @@ public class NbnApiServiceImpl extends NbnApiService {
     boolean locationsValid = locationValidator.validateAllLocations(body.getLocations());
 
     if (nbnIsValid && locationsValid) {
-      if (nbnValidator.prefixMatches(body.getIdentifier(), securityContext.getUserPrincipal().getName())) {
+      String identifier = body.getIdentifier();
+      if (nbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())) {
         SqlResponse result = dao.createOrUpdateNbn(body);
         switch (result) {
           case OK:
-            response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
+            response = status(CREATED).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new): " + identifier )).build();
             break;
           //TODO refactor
           case UPDATE:
-            response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
+            response = status(CREATED).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new): " + identifier )).build();
             break;
           case DUPLICATE:
-            response = Response.status(409).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists")).build();
+            response = status(CONFLICT).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists")).build();
             break;
           //Todo: what is response for general SQL insert failure?
           case FAILURE:
-            response = Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Nbn could not be registered")).build();
+            response = status(BAD_REQUEST).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Nbn could not be registered: " + identifier )).build();
             break;
         }
       }
       else {
-        response = Response.status(403).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "URN:NBN identifier is valid, but does not match the prefix of the authenticated user")).build();
+        response = status(FORBIDDEN).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "URN:NBN identifier is valid, but does not match the prefix of the authenticated user")).build();
       }
     }
     else {
-      response = Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier pattern or location uri(s) supplied")).build();
+      response = status(BAD_REQUEST).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier pattern or location uri(s) supplied")).build();
     }
     return response;
   }
@@ -63,14 +67,14 @@ public class NbnApiServiceImpl extends NbnApiService {
     if (nbnValidator.validate(identifier)) {
       List<String> locations = dao.getLocations(identifier);
       if (locations.isEmpty()) {
-        return Response.status(404).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Supplied URN:NBN identifier not found")).build();
+        return status(NOT_FOUND).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Supplied URN:NBN identifier not found: " + identifier )).build();
       }
       else {
-        return Response.status(200, "OK").entity(locations).build();
+        return status(OK).entity(locations).build();
       }
     }
     else {
-      return Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier supplied")).build();
+      return status(BAD_REQUEST).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier supplied: " + identifier )).build();
     }
   }
 
@@ -81,16 +85,16 @@ public class NbnApiServiceImpl extends NbnApiService {
       List<String> locations = dao.getLocations(identifier);
       if (locations.isEmpty()) {
         //TODO: add identifier in msg everywhere
-        return Response.status(404).entity(new ApiResponseMessage(ApiResponseMessage.WARNING, "Supplied URN:NBN identifier not found")).build();
+        return status(NOT_FOUND).entity(new ApiResponseMessage(ApiResponseMessage.WARNING, "Supplied URN:NBN identifier not found: " + identifier)).build();
       }
       else {
         nbnRecord.put("identifier", identifier);
         nbnRecord.put("locations", locations);
-        return Response.status(200, "OK").entity(nbnRecord).build();
+        return status(OK).entity(nbnRecord).build();
       }
     }
     else {
-      return Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier supplied")).build();
+      return status(BAD_REQUEST).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier supplied: " + identifier)).build();
     }
   }
 
@@ -105,22 +109,22 @@ public class NbnApiServiceImpl extends NbnApiService {
       SqlResponse result = dao.createOrUpdateNbn(nbnLocationsObject);
       switch (result) {
         case UPDATE:
-          response = Response.status(200).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "OK (updated existing)")).build();
+          response = status(OK).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "OK (updated existing): " + identifier)).build();
           break;
         case OK:
-          response = Response.status(201).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new)")).build();
+          response = status(CREATED).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new): " + identifier)).build();
           break;
         case DUPLICATE:
-          response = Response.status(409).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists")).build();
+          response = status(CONFLICT).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists")).build();
           break;
         //Todo: what is response for general SQL insert failure?
         case FAILURE:
-          response = Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Nbn could not be registered")).build();
+          response = status(BAD_REQUEST).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Nbn could not be registered")).build();
           break;
       }
     }
     else {
-      response = Response.status(403).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "URN:NBN identifier is valid, but does not match the prefix of the authenticated user")).build();
+      response = status(FORBIDDEN).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "URN:NBN identifier is valid, but does not match the prefix of the authenticated user")).build();
 
     }
     return response;
