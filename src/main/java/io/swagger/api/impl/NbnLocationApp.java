@@ -1,5 +1,6 @@
-package io.swagger.api;
+package io.swagger.api.impl;
 
+import io.swagger.api.NotFoundException;
 import io.swagger.api.impl.jdbc.Dao;
 import io.swagger.api.impl.validation.LocationValidator;
 import io.swagger.api.impl.validation.NbnValidator;

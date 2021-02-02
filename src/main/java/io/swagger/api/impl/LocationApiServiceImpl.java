@@ -1,7 +1,6 @@
 package io.swagger.api.impl;
 
 import io.swagger.api.LocationApiService;
-import io.swagger.api.NbnLocationApp;
 import io.swagger.api.NotFoundException;
 import io.swagger.api.impl.response.OperationResult;
 
