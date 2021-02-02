@@ -1,11 +1,11 @@
 package io.swagger.api.impl.jdbc;
 
 import io.swagger.api.ApiResponseMessage;
-import io.swagger.api.response.BadRequest;
-import io.swagger.api.response.Conflict;
-import io.swagger.api.response.Created;
-import io.swagger.api.response.Ok;
-import io.swagger.api.response.OperationResult;
+import io.swagger.api.impl.response.BadRequest;
+import io.swagger.api.impl.response.Conflict;
+import io.swagger.api.impl.response.Created;
+import io.swagger.api.impl.response.Ok;
+import io.swagger.api.impl.response.OperationResult;
 import io.swagger.model.NbnLocationsObject;
 import io.swagger.model.User;
 import org.slf4j.Logger;
@@ -19,11 +19,6 @@ import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.swagger.api.impl.jdbc.Dao.SqlResponse.DUPLICATE;
-import static io.swagger.api.impl.jdbc.Dao.SqlResponse.FAILURE;
-import static io.swagger.api.impl.jdbc.Dao.SqlResponse.OK;
-import static io.swagger.api.impl.jdbc.Dao.SqlResponse.UPDATE;
 
 public class Dao {
 

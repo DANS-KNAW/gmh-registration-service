@@ -3,7 +3,7 @@ package io.swagger.api.impl;
 import io.swagger.api.NbnApiService;
 import io.swagger.api.NbnLocationApp;
 import io.swagger.api.NotFoundException;
-import io.swagger.api.response.OperationResult;
+import io.swagger.api.impl.response.OperationResult;
 import io.swagger.model.NbnLocationsObject;
 
 import javax.ws.rs.core.Response;

@@ -1,4 +1,4 @@
-package io.swagger.api.response;
+package io.swagger.api.impl.response;
 
 import static javax.ws.rs.core.Response.*;
 

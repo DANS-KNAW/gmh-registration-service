@@ -1,8 +1,6 @@
-package io.swagger.api.response;
+package io.swagger.api.impl.response;
 
 import io.swagger.api.ApiResponseMessage;
-
-import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.*;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;

@@ -1,7 +1,7 @@
 package io.swagger.api.impl.authentication;
 
 import io.jsonwebtoken.Jwts;
-import io.swagger.api.response.Unauthorized;
+import io.swagger.api.impl.response.Unauthorized;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;

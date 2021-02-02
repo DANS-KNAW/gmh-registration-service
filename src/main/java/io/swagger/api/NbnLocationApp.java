@@ -3,11 +3,11 @@ package io.swagger.api;
 import io.swagger.api.impl.jdbc.Dao;
 import io.swagger.api.impl.validation.LocationValidator;
 import io.swagger.api.impl.validation.NbnValidator;
-import io.swagger.api.response.BadRequest;
-import io.swagger.api.response.Forbidden;
-import io.swagger.api.response.NotFound;
-import io.swagger.api.response.Ok;
-import io.swagger.api.response.OperationResult;
+import io.swagger.api.impl.response.BadRequest;
+import io.swagger.api.impl.response.Forbidden;
+import io.swagger.api.impl.response.NotFound;
+import io.swagger.api.impl.response.Ok;
+import io.swagger.api.impl.response.OperationResult;
 import io.swagger.model.NbnLocationsObject;
 
 import javax.ws.rs.core.SecurityContext;
