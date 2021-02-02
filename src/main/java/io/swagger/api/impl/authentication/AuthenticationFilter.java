@@ -1,7 +1,7 @@
 package io.swagger.api.impl.authentication;
 
 import io.jsonwebtoken.Jwts;
-import io.swagger.api.ApiResponseMessage;
+import io.swagger.api.response.Unauthorized;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -83,8 +83,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
   }
 
   private void abortWithUnauthorized(ContainerRequestContext requestContext) {
-
-    requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(new ApiResponseMessage(ApiResponseMessage.INFO, "Token authorization failed.")).build());
+    Unauthorized unauthorized = new Unauthorized();
+    requestContext.abortWith(Response.status(unauthorized.getStatus()).entity(unauthorized.getResponseBody()).build());
   }
 
   private void validateToken(String token, ContainerRequestContext requestContext) throws Exception {

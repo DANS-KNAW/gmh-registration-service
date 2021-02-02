@@ -1,5 +1,11 @@
 package io.swagger.api.impl.jdbc;
 
+import io.swagger.api.ApiResponseMessage;
+import io.swagger.api.response.BadRequest;
+import io.swagger.api.response.Conflict;
+import io.swagger.api.response.Created;
+import io.swagger.api.response.Ok;
+import io.swagger.api.response.OperationResult;
 import io.swagger.model.NbnLocationsObject;
 import io.swagger.model.User;
 import org.slf4j.Logger;
@@ -21,6 +27,7 @@ import static io.swagger.api.impl.jdbc.Dao.SqlResponse.UPDATE;
 
 public class Dao {
 
+  //TODO: apply Singleton pattern
   private static final Logger logger = LoggerFactory.getLogger(Dao.class);
 
   public Dao() {
@@ -117,8 +124,8 @@ public class Dao {
   }
 
   //TODO: implement rollback: combine transactions in stored procedures
-  public static SqlResponse createOrUpdateNbn(NbnLocationsObject nbnLocationsObject) {
-    SqlResponse result = null;
+  public static OperationResult createOrUpdateNbn(NbnLocationsObject nbnLocationsObject) {
+    OperationResult result = null;
     String identifier = nbnLocationsObject.getIdentifier();
     //    Get rid of the fragment part:
     String unfragmented = identifier;
@@ -139,27 +146,24 @@ public class Dao {
         CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
         callableStatement.setString(1, unfragmented);
         callableStatement.setString(2, location);
-        int sqlresult = (callableStatement.executeUpdate());
-        if (sqlresult == 0) {
+        int sqlResult = (callableStatement.executeUpdate());
+        if (sqlResult == 0) {
           if (idExists) {
-            result = UPDATE;
+            result = new Ok(new ApiResponseMessage(ApiResponseMessage.INFO,"OK (updated existing)"));
           }
           else {
-            result = OK;
+            result = new Created(identifier);
           }
-        }
-        else {
-          result = FAILURE;
-          break;
         }
       }
     }
     catch (SQLException e) {
       if (e instanceof SQLIntegrityConstraintViolationException) {
-        result = DUPLICATE;
+        result = new Conflict(identifier);
       }
       else {
-        result = FAILURE;
+        //TODO: fix this
+        result = new BadRequest(identifier);
       }
 
     }
