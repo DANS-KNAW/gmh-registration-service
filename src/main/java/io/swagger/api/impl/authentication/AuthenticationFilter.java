@@ -1,7 +1,8 @@
 package io.swagger.api.impl.authentication;
 
-import io.jsonwebtoken.Jwts;
+import io.swagger.api.impl.jdbc.Dao;
 import io.swagger.api.impl.response.Unauthorized;
+import io.swagger.model.User;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -11,21 +12,17 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
 import java.security.Principal;
-
-import static io.swagger.api.impl.authentication.KeyUtil.getSecretKey;
 
 @Secured
 @Provider
 @Priority(Priorities.AUTHENTICATION)
 public class AuthenticationFilter implements ContainerRequestFilter {
 
-  private static final String REALM = "example";
   private static final String AUTHENTICATION_SCHEME = "Bearer";
 
   @Override
-  public void filter(ContainerRequestContext requestContext) throws IOException {
+  public void filter(ContainerRequestContext requestContext) {
 
     // Get the Authorization header from the request
     String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
@@ -39,21 +36,15 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     // Extract the token from the Authorization header
     String token = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
 
-    try {
-
-      // Validate the token
-      validateToken(token, requestContext);
-
-    }
-    catch (Exception e) {
-      abortWithUnauthorized(requestContext);
-    }
+    // Validate the token
+    User currentUser = validateToken(token, requestContext);
 
     requestContext.setSecurityContext(new SecurityContext() {
 
       @Override
       public Principal getUserPrincipal() {
-        return () -> getOrgPrefix(token);
+        //TODO: refactor
+        return currentUser::getOrgPrefix;
       }
 
       @Override
@@ -61,15 +52,14 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         return false;
       }
 
-      //TODO" implement
       @Override
       public boolean isSecure() {
-        return true;
+        return false;
       }
 
       @Override
       public String getAuthenticationScheme() {
-        return "Bearer";
+        return null;
       }
     });
   }
@@ -87,23 +77,18 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     requestContext.abortWith(Response.status(unauthorized.getStatus()).entity(unauthorized.getResponseBody()).build());
   }
 
-  private void validateToken(String token, ContainerRequestContext requestContext) throws Exception {
+  // Validates by getting the current User by the token from the request. If the db returns no result it means the token is not in the db and therefore not valid.
+  private User validateToken(String token, ContainerRequestContext requestContext) {
 
-    // Check if the token was issued by the server and if it's not expired
-    // Throw an Exception if the token is invalid
-    // Validate the token
+    User currentUser = null;
 
     try {
-      // Validate the token
-      Jwts.parser().setSigningKey(getSecretKey()).parseClaimsJws(token);
-
+      currentUser = Dao.getUserByToken(token);
     }
     catch (Exception e) {
       abortWithUnauthorized(requestContext);
     }
+    return currentUser;
   }
 
-  private String getOrgPrefix(String token) {
-    return Jwts.parser().setSigningKey(getSecretKey()).parseClaimsJws(token).getBody().getId();
-  }
 }

@@ -45,8 +45,6 @@ public class Dao {
       }
       else {
         user = new User();
-        user.setUserName(rs.getString(1));
-        user.setPassword(rs.getString(2));
         user.setOrgPrefix(rs.getString(3));
       }
     }
@@ -144,7 +142,7 @@ public class Dao {
         int sqlResult = (callableStatement.executeUpdate());
         if (sqlResult == 0) {
           if (idExists) {
-            result = new Ok(new ApiResponseMessage(ApiResponseMessage.INFO,"OK (updated existing)"));
+            result = new Ok(new ApiResponseMessage(ApiResponseMessage.INFO, "OK (updated existing)"));
           }
           else {
             result = new Created(identifier);
@@ -260,11 +258,78 @@ public class Dao {
     return nbns;
   }
 
-  public enum SqlResponse {
-    OK, FAILURE, DUPLICATE, UPDATE
+  public static User getUserByToken(String token) throws Exception {
+    User user = null;
+    ResultSet rs = null;
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+
+    try {
+      conn = PooledDataSource.getConnection();
+      pstmt = conn.prepareStatement("SELECT  C.org_prefix FROM nbnresolver.credentials C WHERE C.token = ?;");
+      pstmt.setString(1, token);
+      rs = pstmt.executeQuery();
+      if (!rs.next()) {
+        throw new Exception("Invalid Token");
+      }
+      else {
+        user = new User();
+        user.setOrgPrefix(rs.getString(1));
+      }
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (pstmt != null) {
+          pstmt.close();
+        }
+        if (conn != null) {
+          conn.close();
+        }
+      }
+      catch (Exception ex) {
+        //ignored
+      }
+    }
+    return user;
+  }
+
+  public static void registerToken(String token, String username, String password) throws Exception {
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+
+    try {
+      conn = PooledDataSource.getConnection();
+      pstmt = conn.prepareStatement("UPDATE credentials C SET C.token = ? WHERE C.username = ? AND C.password = ?;");
+      pstmt.setString(1, token);
+      pstmt.setString(2, username);
+      pstmt.setString(3, password);
+      int resultCode = pstmt.executeUpdate();
+      if (resultCode != 1) {
+        throw new Exception("Token could not be persisted");
+      }
+    }
+    finally {
+      try {
+        if (pstmt != null) {
+          pstmt.close();
+        }
+        if (conn != null) {
+          conn.close();
+        }
+      }
+      catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
   }
 
 }
+
+
+
 
 
 

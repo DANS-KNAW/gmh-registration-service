@@ -1,7 +1,5 @@
 package io.swagger.api.impl;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.swagger.api.ApiResponseMessage;
 import io.swagger.api.AuthenticationApiService;
 import io.swagger.api.NotFoundException;
@@ -10,20 +8,18 @@ import io.swagger.model.Credentials;
 import io.swagger.model.User;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
+import java.security.SecureRandom;
+import java.util.Base64;
 
-import static io.swagger.api.impl.authentication.KeyUtil.getSecretKey;
-import static javax.ws.rs.core.Response.Status.*;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-22T09:23:35.355Z[GMT]")
 public class AuthenticationApiServiceImpl extends AuthenticationApiService {
-  private static String TOKEN_ISSUER = "BRI-GMH";
-  Dao dao = new Dao();
+
   User user;
+  private static final SecureRandom secureRandom = new SecureRandom();
+  private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder();
 
   @Override
   public Response authenticate(Credentials body, SecurityContext securityContext) throws NotFoundException {
@@ -31,40 +27,34 @@ public class AuthenticationApiServiceImpl extends AuthenticationApiService {
     String password = body.getPassword();
 
     try {
-
       // Authenticate the user using the credentials provided
       authenticate(username, password);
 
       // Issue a token for the user
       String token = issueToken();
 
+      //persist token (overwrite existing token for this user)
+      Dao.registerToken(token, username, password);
+
       // Return the token on the response
       return Response.ok(token).build();
 
     }
     catch (Exception e) {
-      return Response.status(FORBIDDEN).entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Authentication failed: invalid credentials" )).build();
+      return Response.status(FORBIDDEN).entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Authentication failed: invalid credentials")).build();
     }
   }
 
   private void authenticate(String username, String password) throws Exception {
     // Authenticate against a database, LDAP, file or whatever
     // Throw an Exception if the credentials are invalid
-    user = dao.getUser(username, password);
+    user = Dao.getUser(username, password);
   }
 
   private String issueToken() {
-    // Issue a token (can be a random String persisted to a database or a JWT token)
-    // The issued token must be associated to a user
-    // Return the issued token
-    String jwtToken = Jwts.builder()
-        .setSubject(user.getUserName())
-        .setId(user.getOrgPrefix())
-        .setIssuer(TOKEN_ISSUER)
-        .setIssuedAt(new Date()).setExpiration(Date.from(LocalDateTime.now().plusMinutes(60L).toInstant(ZoneOffset.UTC)))
-        .signWith(SignatureAlgorithm.HS512, getSecretKey())
-        .compact();
-    return jwtToken;
+    byte[] randomBytes = new byte[48];
+    secureRandom.nextBytes(randomBytes);
+    return base64Encoder.encodeToString(randomBytes);
   }
 
 }
