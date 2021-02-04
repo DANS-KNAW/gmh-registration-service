@@ -77,9 +77,7 @@ import javax.validation.constraints.*;
 
       @ApiResponse(responseCode = "403", description = "URN:NBN identifier is valid, but does not match the prefix of the authenticated user"),
 
-      @ApiResponse(responseCode = "409", description = "Conflict, resource already exists"),
-
-      @ApiResponse(responseCode = "500", description = "Internal server error") })
+      @ApiResponse(responseCode = "409", description = "Conflict, resource already exists")})
   public Response createNbnLocations(@Parameter(in = ParameterIn.DEFAULT, description = "A json object that contains the URN:NBN and associated locations." ,required=true) NbnLocationsObject body
 
       ,@Context SecurityContext securityContext)
@@ -100,9 +98,7 @@ import javax.validation.constraints.*;
 
       @ApiResponse(responseCode = "401", description = "Authentication information is missing or invalid"),
 
-      @ApiResponse(responseCode = "404", description = "Supplied URN:NBN identifier not found"),
-
-      @ApiResponse(responseCode = "500", description = "Internal server error") })
+      @ApiResponse(responseCode = "404", description = "Supplied URN:NBN identifier not found")})
   public Response getLocationsByNbn(@Parameter(in = ParameterIn.PATH, description = "URN:NBN identifier",required=true) @PathParam("identifier") String identifier
       ,@Context SecurityContext securityContext)
       throws NotFoundException {
@@ -124,9 +120,7 @@ import javax.validation.constraints.*;
 
       @ApiResponse(responseCode = "403", description = "URN:NBN-prefix is not registered to this user"),
 
-      @ApiResponse(responseCode = "404", description = "Supplied URN:NBN identifier not found"),
-
-      @ApiResponse(responseCode = "500", description = "Internal server error") })
+      @ApiResponse(responseCode = "404", description = "Supplied URN:NBN identifier not found")})
   public Response getNbnRecord(@Parameter(in = ParameterIn.PATH, description = "URN:NBN identifier",required=true) @PathParam("identifier") String identifier
       ,@Context SecurityContext securityContext)
       throws NotFoundException {
@@ -148,9 +142,7 @@ import javax.validation.constraints.*;
 
       @ApiResponse(responseCode = "401", description = "Authentication information is missing or invalid"),
 
-      @ApiResponse(responseCode = "403", description = "URN:NBN-prefix is not registered to this user"),
-
-      @ApiResponse(responseCode = "500", description = "Internal server error") })
+      @ApiResponse(responseCode = "403", description = "URN:NBN-prefix is not registered to this user")})
   public Response updateNbnRecord(@Parameter(in = ParameterIn.DEFAULT, description = "A json object that contains the associated locations for the {identifier}" ,required=true) List<String> body
 
       ,@Parameter(in = ParameterIn.PATH, description = "URN:NBN identifier",required=true) @PathParam("identifier") String identifier

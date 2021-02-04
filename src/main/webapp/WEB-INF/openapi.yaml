@@ -157,25 +157,23 @@ paths:
         - Location
 
 
-  /authentication:
+  /token:
     post:
       security:
         - UserLogin: []
-      summary: 'Authenticates a user'
-      description: 'Authenticates a user and generates a JWT to be used for subsequest requests.'
-      operationId: 'authenticate'
+      summary: 'Returns an api token'
+      description: 'Authenticates a user and generates an api token to be used for requests to the other endpoints.'
+      operationId: 'token'
       requestBody:
         required: true
         description: A json object with username and password
         content:
           application/json:
             schema:
-              type: object
-              items:
               $ref: '#/components/schemas/Credentials'
       responses:
         '200':
-          description: OK (login successful)
+          description: OK (Token generated)
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
@@ -259,4 +257,4 @@ components:
     BearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: ApiToken
+      bearerFormat: apiToken

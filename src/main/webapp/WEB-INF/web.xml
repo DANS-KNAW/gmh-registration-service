@@ -29,6 +29,10 @@
             <param-name>openApi.configuration.prettyPrint</param-name>
             <param-value>true</param-value>
         </init-param>
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>io.swagger.v3.jaxrs2.integration.resources,com.example.jersey.rest.servlets</param-value>
+        </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
     
