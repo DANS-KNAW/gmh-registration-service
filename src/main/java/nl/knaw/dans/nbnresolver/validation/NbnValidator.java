@@ -27,13 +27,13 @@ public class NbnValidator {
   public NbnValidator() {
   }
 
-  public boolean validate(String nbn) {
+  public static boolean validate(String nbn) {
     Pattern pattern = Pattern.compile(NBN_PATTERN);
     Matcher matcher = pattern.matcher(nbn);
     return matcher.matches();
   }
 
-  public boolean prefixMatches(String nbn, String orgPrefix) {
+  public static boolean prefixMatches(String nbn, String orgPrefix) {
     boolean matches = false;
     Pattern pattern = Pattern.compile(ORG_PREFIX_PATTERN);
     Matcher matcher = pattern.matcher(nbn);

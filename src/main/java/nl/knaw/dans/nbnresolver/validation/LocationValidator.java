@@ -7,19 +7,19 @@ import java.util.regex.Pattern;
 public class LocationValidator {
 
   public static final String NBN_PATTERN = "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)";
-  private Pattern pattern;
-  private Matcher matcher;
+  private static Pattern pattern;
+  private static Matcher matcher;
 
   public LocationValidator() {
     pattern = Pattern.compile(NBN_PATTERN);
   }
 
-  public boolean validate(String location) {
+  public static boolean validate(String location) {
     matcher = pattern.matcher(location);
     return matcher.matches();
   }
 
-  public boolean validateAllLocations(List<String> locations) {
+  public static boolean validateAllLocations(List<String> locations) {
     for (String location : locations) {
       boolean isValid = validate(location);
       if (!isValid) {
