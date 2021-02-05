@@ -1,4 +1,4 @@
-package io.swagger.api.impl.authentication;
+package nl.knaw.dans.nbnresolver.authentication;
 
 import javax.ws.rs.NameBinding;
 import java.lang.annotation.Retention;

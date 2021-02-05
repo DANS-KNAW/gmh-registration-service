@@ -1,7 +1,7 @@
-package io.swagger.api.impl.authentication;
+package nl.knaw.dans.nbnresolver.authentication;
 
-import io.swagger.api.impl.jdbc.Dao;
-import io.swagger.api.impl.response.Unauthorized;
+import nl.knaw.dans.nbnresolver.jdbc.Dao;
+import nl.knaw.dans.nbnresolver.response.Unauthorized;
 import io.swagger.model.User;
 
 import javax.annotation.Priority;

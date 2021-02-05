@@ -1,9 +1,9 @@
-package io.swagger.api.impl;
+package nl.knaw.dans.nbnresolver;
 
 import io.swagger.api.ApiResponseMessage;
 import io.swagger.api.NotFoundException;
 import io.swagger.api.TokenApiService;
-import io.swagger.api.impl.jdbc.Dao;
+import nl.knaw.dans.nbnresolver.jdbc.Dao;
 import io.swagger.model.Credentials;
 import io.swagger.model.User;
 

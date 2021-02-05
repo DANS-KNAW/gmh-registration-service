@@ -1,4 +1,4 @@
-package io.swagger.api.impl.validation;
+package nl.knaw.dans.nbnresolver.validation;
 
 /**
  * Copyright (C) 2020 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)

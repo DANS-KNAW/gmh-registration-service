@@ -1,4 +1,4 @@
-package io.swagger.api.impl.response;
+package nl.knaw.dans.nbnresolver.response;
 
 import static javax.ws.rs.core.Response.*;
 

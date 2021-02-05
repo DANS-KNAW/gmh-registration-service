@@ -1,8 +1,6 @@
 package io.swagger.api;
 
-import io.swagger.api.impl.authentication.Secured;
-import io.swagger.model.*;
-import io.swagger.api.NbnApiService;
+import nl.knaw.dans.nbnresolver.authentication.Secured;
 import io.swagger.api.factories.NbnApiServiceFactory;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,22 +15,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import io.swagger.model.NbnLocationsObject;
 
-import java.util.Map;
 import java.util.List;
-import io.swagger.api.NotFoundException;
-
-import java.io.InputStream;
-
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.*;
-import javax.validation.constraints.*;
-
 
 @Path("/nbn")
 

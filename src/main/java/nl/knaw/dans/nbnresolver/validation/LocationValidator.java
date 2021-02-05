@@ -1,4 +1,4 @@
-package io.swagger.api.impl.validation;
+package nl.knaw.dans.nbnresolver.validation;
 
 import java.util.List;
 import java.util.regex.Matcher;

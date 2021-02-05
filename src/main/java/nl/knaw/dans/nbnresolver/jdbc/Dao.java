@@ -1,11 +1,11 @@
-package io.swagger.api.impl.jdbc;
+package nl.knaw.dans.nbnresolver.jdbc;
 
 import io.swagger.api.ApiResponseMessage;
-import io.swagger.api.impl.response.BadRequest;
-import io.swagger.api.impl.response.Conflict;
-import io.swagger.api.impl.response.Created;
-import io.swagger.api.impl.response.Ok;
-import io.swagger.api.impl.response.OperationResult;
+import nl.knaw.dans.nbnresolver.response.BadRequest;
+import nl.knaw.dans.nbnresolver.response.Conflict;
+import nl.knaw.dans.nbnresolver.response.Created;
+import nl.knaw.dans.nbnresolver.response.Ok;
+import nl.knaw.dans.nbnresolver.response.OperationResult;
 import io.swagger.model.NbnLocationsObject;
 import io.swagger.model.User;
 import org.slf4j.Logger;

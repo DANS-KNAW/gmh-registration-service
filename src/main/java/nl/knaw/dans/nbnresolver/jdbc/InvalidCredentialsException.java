@@ -1,4 +1,4 @@
-package io.swagger.api.impl.jdbc;
+package nl.knaw.dans.nbnresolver.jdbc;
 
 public class InvalidCredentialsException extends Exception {
 

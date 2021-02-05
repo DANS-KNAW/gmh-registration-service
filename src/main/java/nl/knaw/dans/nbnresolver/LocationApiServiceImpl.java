@@ -1,8 +1,8 @@
-package io.swagger.api.impl;
+package nl.knaw.dans.nbnresolver;
 
 import io.swagger.api.LocationApiService;
 import io.swagger.api.NotFoundException;
-import io.swagger.api.impl.response.OperationResult;
+import nl.knaw.dans.nbnresolver.response.OperationResult;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;

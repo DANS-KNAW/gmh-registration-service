@@ -1,14 +1,14 @@
-package io.swagger.api.impl;
+package nl.knaw.dans.nbnresolver;
 
 import io.swagger.api.NotFoundException;
-import io.swagger.api.impl.jdbc.Dao;
-import io.swagger.api.impl.validation.LocationValidator;
-import io.swagger.api.impl.validation.NbnValidator;
-import io.swagger.api.impl.response.BadRequest;
-import io.swagger.api.impl.response.Forbidden;
-import io.swagger.api.impl.response.NotFound;
-import io.swagger.api.impl.response.Ok;
-import io.swagger.api.impl.response.OperationResult;
+import nl.knaw.dans.nbnresolver.jdbc.Dao;
+import nl.knaw.dans.nbnresolver.validation.LocationValidator;
+import nl.knaw.dans.nbnresolver.validation.NbnValidator;
+import nl.knaw.dans.nbnresolver.response.BadRequest;
+import nl.knaw.dans.nbnresolver.response.Forbidden;
+import nl.knaw.dans.nbnresolver.response.NotFound;
+import nl.knaw.dans.nbnresolver.response.Ok;
+import nl.knaw.dans.nbnresolver.response.OperationResult;
 import io.swagger.model.NbnLocationsObject;
 
 import javax.ws.rs.core.SecurityContext;
