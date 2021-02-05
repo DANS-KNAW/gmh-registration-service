@@ -22,7 +22,6 @@ import java.util.List;
 
 public class Dao {
 
-  //TODO: apply Singleton pattern
   private static final Logger logger = LoggerFactory.getLogger(Dao.class);
 
   public Dao() {
