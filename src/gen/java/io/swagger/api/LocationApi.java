@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -22,8 +23,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,6 +62,26 @@ public class LocationApi {
     }
 
     this.delegate = delegate;
+  }
+
+  @GET
+  @Path("/swagger")
+  @Produces(MediaType.TEXT_HTML)
+  public URL getSwaggerUI(){
+
+    ClassLoader c = Thread.currentThread().getContextClassLoader();
+    return c.getResource("/src/main/webapp/dist/index.html");
+
+
+//    try {
+//      String base = ("/src/main/webapp/dist/index.html");
+//      File f = new File(base);
+//      System.out.println("file" + f);
+//      return new FileInputStream(f);
+//    } catch (FileNotFoundException e) {
+//      // log the error?
+//      return null;
+//    }
   }
 
 
