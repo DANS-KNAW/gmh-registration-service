@@ -43,7 +43,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
       @Override
       public Principal getUserPrincipal() {
-        //TODO: refactor
         return currentUser::getOrgPrefix;
       }
 
@@ -59,16 +58,12 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
       @Override
       public String getAuthenticationScheme() {
-        return null;
+        return "Bearer";
       }
     });
   }
 
   private boolean isTokenBasedAuthentication(String authorizationHeader) {
-
-    // Check if the Authorization header is valid
-    // It must not be null and must be prefixed with "Bearer" plus a whitespace
-    // The authentication scheme comparison must be case-insensitive
     return authorizationHeader != null && authorizationHeader.toLowerCase().startsWith(AUTHENTICATION_SCHEME.toLowerCase() + " ");
   }
 
