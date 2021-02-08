@@ -11,10 +11,10 @@ public class LocationValidator {
   private static Matcher matcher;
 
   public LocationValidator() {
-    pattern = Pattern.compile(NBN_PATTERN);
   }
 
   public static boolean validate(String location) {
+    pattern = Pattern.compile(NBN_PATTERN);
     matcher = pattern.matcher(location);
     return matcher.matches();
   }
