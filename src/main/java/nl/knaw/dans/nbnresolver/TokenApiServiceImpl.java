@@ -49,7 +49,7 @@ public class TokenApiServiceImpl extends TokenApiService {
   private void authenticate(String username, String password) throws Exception {
     // Authenticate against a database, LDAP, file or whatever
     // Throw an Exception if the credentials are invalid
-    user = Dao.getUser(username, password);
+    user = Dao.getUserByCredentials(username, password);
   }
 
   private String issueToken() {
