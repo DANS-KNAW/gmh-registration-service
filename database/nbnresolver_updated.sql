@@ -122,17 +122,22 @@ USE `nbnresolver` ;
 
 DELIMITER $$
 USE `nbnresolver`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `insertNbnObject`(IN nbn_value VARCHAR(100),IN nbn_location VARCHAR(150))
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insertNbnObject`(IN nbn_value VARCHAR(150),IN nbn_location VARCHAR(150), IN registrant_id INT(11), IN failover BOOLEAN)
 BEGIN
+
+DECLARE identifier_id BIGINT(20);
+DECLARE location_id BIGINT(20);
 
 START TRANSACTION;
 
 INSERT INTO identifier (identifier.identifier_value) VALUES (nbn_value);
+SET identifier_id = LAST_INSERT_ID();
 INSERT INTO location (location.location_url) VALUES (nbn_location);
-INSERT INTO identifier_registrant (identifier_registrant.identifier_id, identifier_registrant.registrant_id) VALUES ((SELECT identifier.identifier_id from identifier WHERE identifier_value = nbn_value), 1 );
-INSERT INTO location_registrant (location_registrant.location_id, location_registrant.registrant_id) VALUES ((SELECT location.location_id from location WHERE location.location_url = nbn_location), 1 );
-INSERT INTO identifier_location (identifier_location.location_id, identifier_location.identifier_id, identifier_location.last_modified, identifier_location.isFailover) VALUES ((SELECT location.location_id from location WHERE location.location_url = nbn_location) , (SELECT identifier.identifier_id from identifier WHERE identifier.identifier_value = nbn_value) , NOW() , 0);
-        
+SET location_id = LAST_INSERT_ID();
+INSERT INTO identifier_registrant (identifier_registrant.identifier_id, identifier_registrant.registrant_id) VALUES (identifier_id, registrant_id );
+INSERT INTO identifier_location (identifier_location.location_id, identifier_location.identifier_id, identifier_location.last_modified, identifier_location.isFailover) VALUES (location_id , identifier_id , NOW() , failover);
+INSERT INTO location_registrant (location_registrant.location_id, location_registrant.registrant_id) VALUES (location_id, registrant_id );
+
 COMMIT;
 
 END$$
