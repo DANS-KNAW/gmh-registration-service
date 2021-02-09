@@ -19,6 +19,6 @@ public class BadRequest implements OperationResult {
 
   @Override
   public Object getResponseBody() {
-    return new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier supplied: " + identifier);
+    return new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier pattern or location uri(s) supplied: " + identifier);
   }
 }
