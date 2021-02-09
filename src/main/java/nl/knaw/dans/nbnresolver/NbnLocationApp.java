@@ -1,7 +1,6 @@
 package nl.knaw.dans.nbnresolver;
 
 import io.swagger.api.ApiResponseMessage;
-import io.swagger.api.NotFoundException;
 import io.swagger.model.NbnLocationsObject;
 import nl.knaw.dans.nbnresolver.jdbc.Dao;
 import nl.knaw.dans.nbnresolver.response.BadRequest;
@@ -46,7 +45,7 @@ public class NbnLocationApp {
 
   }
 
-  public OperationResult dogetNbnRecord(String identifier, SecurityContext securityContext) throws NotFoundException {
+  public OperationResult dogetNbnRecord(String identifier) {
     OperationResult result;
 
     Map<String, Object> nbnRecord = new HashMap<>();
@@ -69,7 +68,7 @@ public class NbnLocationApp {
     return result;
   }
 
-  public OperationResult doUpdateNbnRecord(List<String> body, String identifier, SecurityContext securityContext) throws NotFoundException {
+  public OperationResult doUpdateNbnRecord(List<String> body, String identifier, SecurityContext securityContext) {
     OperationResult result;
 
     if (NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())) {
@@ -92,8 +91,7 @@ public class NbnLocationApp {
     return result;
   }
 
-
-  public OperationResult doGetLocationsByNbn(String identifier, SecurityContext securityContext) throws NotFoundException {
+  public OperationResult doGetLocationsByNbn(String identifier) {
     OperationResult result;
 
     if (NbnValidator.validate(identifier)) {
@@ -111,7 +109,7 @@ public class NbnLocationApp {
     return result;
   }
 
-  public OperationResult doGetNbnByLocation(String location, SecurityContext securityContext) {
+  public OperationResult doGetNbnByLocation(String location) {
     OperationResult result;
 
     List<String> nbn = Dao.getNbnByLocation(location);
