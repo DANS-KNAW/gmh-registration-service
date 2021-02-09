@@ -31,7 +31,7 @@ public class Dao {
 
     try {
       conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT C.username, C.password, C.org_prefix FROM nbnresolver.credentials C WHERE C.username = ? AND C.password = ?;");
+      pstmt = conn.prepareStatement("SELECT C.org_prefix FROM nbnresolver.credentials C WHERE C.username = ? AND C.password = ?;");
       pstmt.setString(1, username);
       pstmt.setString(2, password);
       rs = pstmt.executeQuery();
@@ -40,7 +40,7 @@ public class Dao {
       }
       else {
         user = new User();
-        user.setOrgPrefix(rs.getString(3));
+        user.setOrgPrefix(rs.getString(1));
       }
     }
 
@@ -67,8 +67,6 @@ public class Dao {
   public static boolean getIdentifier(String identifier) {
     boolean idExists = false;
     String unfragmented = getUnfragmentedString(identifier);
-
-    logger.info("Getting location(s) for: " + unfragmented);
 
     ResultSet rs = null;
     Connection conn = null;
@@ -110,6 +108,7 @@ public class Dao {
     String unfragmented = getUnfragmentedString(identifier);
 
     logger.info("Inserting in database: " + nbnLocationsObject.toString());
+
     Connection conn = null;
 
     boolean idExists = getIdentifier(identifier);
@@ -133,7 +132,7 @@ public class Dao {
         }
       }
       catch (SQLException e) {
-        logger.error("Error inserting nbn object in database..");
+        logger.error("Error inserting nbn object in database.");
       }
       finally {
         try {
@@ -207,21 +206,10 @@ public class Dao {
 
   }
 
-  private static String getUnfragmentedString(String identifier) {
-    String unfragmented = identifier;
-    if (identifier != null && identifier.contains("#")) {
-      unfragmented = identifier.split("#")[0];
-    }
-    return unfragmented;
-  }
-
   public static List<String> getLocations(String identifier) {
     List<String> locations = new ArrayList<>();
 
-    //    Get rid of the fragment part:
     String unfragmented = getUnfragmentedString(identifier);
-
-    logger.info("Getting location(s) for: " + unfragmented);
 
     ResultSet rs = null;
     Connection conn = null;
@@ -260,8 +248,6 @@ public class Dao {
 
   public static List<String> getNbnByLocation(String location) {
     List<String> nbns = new ArrayList<>();
-
-    logger.info("Getting nbn(s) for: " + location);
 
     ResultSet rs = null;
     Connection conn = null;
@@ -363,6 +349,14 @@ public class Dao {
         e.printStackTrace();
       }
     }
+  }
+
+  private static String getUnfragmentedString(String identifier) {
+    String unfragmented = identifier;
+    if (identifier != null && identifier.contains("#")) {
+      unfragmented = identifier.split("#")[0];
+    }
+    return unfragmented;
   }
 
 }
