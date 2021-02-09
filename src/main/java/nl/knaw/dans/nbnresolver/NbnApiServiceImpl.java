@@ -21,7 +21,7 @@ public class NbnApiServiceImpl extends NbnApiService {
 
   @Override
   public Response getNbnRecord(String identifier, SecurityContext securityContext) {
-    OperationResult result = app.dogetNbnRecord(identifier);
+    OperationResult result = app.doGetNbnRecord(identifier);
     return Response.status(result.getStatus()).entity(result.getResponseBody()).build();
   }
 

@@ -45,7 +45,7 @@ public class NbnLocationApp {
 
   }
 
-  public OperationResult dogetNbnRecord(String identifier) {
+  public OperationResult doGetNbnRecord(String identifier) {
     OperationResult result;
 
     Map<String, Object> nbnRecord = new HashMap<>();
