@@ -59,16 +59,13 @@ public class Dao {
         }
       }
       catch (Exception ex) {
-        //ignored
       }
     }
     return user;
   }
 
   public static boolean getIdentifier(String identifier) {
-
     boolean idExists = false;
-    //    Get rid of the fragment part:
     String unfragmented = getUnfragmentedString(identifier);
 
     logger.info("Getting location(s) for: " + unfragmented);
@@ -102,7 +99,6 @@ public class Dao {
         }
       }
       catch (Exception ex) {
-        //ignored
       }
     }
     return idExists;
@@ -111,7 +107,6 @@ public class Dao {
   public static OperationResult createNbn(NbnLocationsObject nbnLocationsObject, int registantId) {
     OperationResult result = null;
     String identifier = nbnLocationsObject.getIdentifier();
-    //    Get rid of the fragment part:
     String unfragmented = getUnfragmentedString(identifier);
 
     logger.info("Inserting in database: " + nbnLocationsObject.toString());
@@ -133,15 +128,12 @@ public class Dao {
           callableStatement.setString(2, location);
           callableStatement.setInt(3, registantId);
           callableStatement.setBoolean(4, true);
-          int sqlResult = (callableStatement.executeUpdate());
-          if (sqlResult == 0) {
-            result = new Created(identifier);
-          }
+          callableStatement.executeUpdate();
+          result = new Created(identifier);
         }
       }
       catch (SQLException e) {
         logger.error("Error inserting nbn object in database..");
-        e.printStackTrace();
       }
       finally {
         try {
@@ -156,12 +148,27 @@ public class Dao {
     return result;
   }
 
-  public static void updateNbN(String nbn) {
-    //
-  }
-
-  private static void deleteNbn(String nbn) {
-    //
+  public static void deleteNbn(String nbn) {
+    Connection conn = null;
+    try {
+      conn = PooledDataSource.getConnection();
+      conn.setAutoCommit(false);
+      String deleteNbnStoredProcedureQuery = "{call deleteNbnObject(?)}";
+      CallableStatement callableStatement = conn.prepareCall(deleteNbnStoredProcedureQuery);
+      callableStatement.setString(1, nbn);
+      callableStatement.executeUpdate();
+    }
+    catch (SQLException e) {
+    }
+    finally {
+      try {
+        if (conn != null) {
+          conn.close();
+        }
+      }
+      catch (Exception ex) {
+      }
+    }
   }
 
   public static int getRegistrantIdByOrgPrefix(String org_prefix) {
@@ -194,7 +201,6 @@ public class Dao {
         }
       }
       catch (Exception ex) {
-        //ignored
       }
     }
     return registrantId;
@@ -286,7 +292,6 @@ public class Dao {
         }
       }
       catch (Exception ex) {
-        //ignored
       }
     }
     return nbns;

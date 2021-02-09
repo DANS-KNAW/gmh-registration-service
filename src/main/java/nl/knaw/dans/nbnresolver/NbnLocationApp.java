@@ -1,9 +1,11 @@
 package nl.knaw.dans.nbnresolver;
 
+import io.swagger.api.ApiResponseMessage;
 import io.swagger.api.NotFoundException;
 import io.swagger.model.NbnLocationsObject;
 import nl.knaw.dans.nbnresolver.jdbc.Dao;
 import nl.knaw.dans.nbnresolver.response.BadRequest;
+import nl.knaw.dans.nbnresolver.response.Created;
 import nl.knaw.dans.nbnresolver.response.Forbidden;
 import nl.knaw.dans.nbnresolver.response.NotFound;
 import nl.knaw.dans.nbnresolver.response.Ok;
@@ -68,20 +70,28 @@ public class NbnLocationApp {
   }
 
   public OperationResult doUpdateNbnRecord(List<String> body, String identifier, SecurityContext securityContext) throws NotFoundException {
-    OperationResult result = null;
-
-    NbnLocationsObject nbnLocationsObject = new NbnLocationsObject();
-    nbnLocationsObject.setIdentifier(identifier);
-    nbnLocationsObject.setLocations(body);
+    OperationResult result;
 
     if (NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())) {
-     // result = Dao.updateNbn(nbnLocationsObject);
+      int registrantId = Dao.getRegistrantIdByOrgPrefix(securityContext.getUserPrincipal().getName());
+      NbnLocationsObject nbnLocationsObject = getNbnLocationsObject(body, identifier);
+      if (Dao.getIdentifier(identifier)) {
+        Dao.deleteNbn(identifier);
+        result = Dao.createNbn(nbnLocationsObject, registrantId);
+        if (result instanceof Created) {
+          result = new Ok(new ApiResponseMessage(4, "OK (updated existing)"));
+        }
+      }
+      else {
+        result = Dao.createNbn(nbnLocationsObject, registrantId);
+      }
     }
     else {
       result = new Forbidden();
     }
     return result;
   }
+
 
   public OperationResult doGetLocationsByNbn(String identifier, SecurityContext securityContext) throws NotFoundException {
     OperationResult result;
@@ -113,6 +123,13 @@ public class NbnLocationApp {
       result = new NotFound(location);
     }
     return result;
+  }
+
+  private NbnLocationsObject getNbnLocationsObject(List<String> body, String identifier) {
+    NbnLocationsObject nbnLocationsObject = new NbnLocationsObject();
+    nbnLocationsObject.setIdentifier(identifier);
+    nbnLocationsObject.setLocations(body);
+    return nbnLocationsObject;
   }
 
 }
