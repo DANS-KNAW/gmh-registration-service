@@ -139,7 +139,7 @@
                             "BearerAuth": []
                         }],
                         "summary": "Updates an existing URN:NBN {identifier} or registers a new URN:NBN {identifier} associated with a prioritized list of locations.",
-                        "description": "Updates or registers a (new) URN:NBN associated with a prioritized list of locations. Multiple locations are prioritized in respective order. The first location is the preferred. The second is failover, etc. <br>Identifiers must have a prefix that matches the authenticated user.",
+                        "description": "Updates or registers a (new) URN:NBN associated with a prioritized list of locations. Multiple locations are prioritized in respective order. The first location is the preferred. The second is failover, etc. <br>Identifiers must have a prefix that matches the authenticated user. In case of an update the existing locations will be replaced by the locations provided in this request.",
                         "operationId": "updateNbnRecord",
                         "requestBody": {
                             "required": true,
