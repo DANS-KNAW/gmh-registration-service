@@ -26,11 +26,12 @@ public class NbnLocationApp {
 
     boolean nbnIsValid = NbnValidator.validate(body.getIdentifier());
     boolean locationsValid = LocationValidator.validateAllLocations(body.getLocations());
+    int registrantId = Dao.getRegistrantIdByOrgPrefix(securityContext.getUserPrincipal().getName());
 
     if (nbnIsValid && locationsValid) {
       String identifier = body.getIdentifier();
       if (NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())) {
-        result = Dao.createOrUpdateNbn(body);
+        result = Dao.createNbn(body, registrantId);
       }
       else {
         result = new Forbidden();
@@ -67,14 +68,14 @@ public class NbnLocationApp {
   }
 
   public OperationResult doUpdateNbnRecord(List<String> body, String identifier, SecurityContext securityContext) throws NotFoundException {
-    OperationResult result;
+    OperationResult result = null;
 
     NbnLocationsObject nbnLocationsObject = new NbnLocationsObject();
     nbnLocationsObject.setIdentifier(identifier);
     nbnLocationsObject.setLocations(body);
 
     if (NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())) {
-      result = Dao.createOrUpdateNbn(nbnLocationsObject);
+     // result = Dao.updateNbn(nbnLocationsObject);
     }
     else {
       result = new Forbidden();

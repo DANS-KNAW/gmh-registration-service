@@ -1,13 +1,10 @@
 package nl.knaw.dans.nbnresolver.jdbc;
 
-import io.swagger.api.ApiResponseMessage;
-import nl.knaw.dans.nbnresolver.response.BadRequest;
-import nl.knaw.dans.nbnresolver.response.Conflict;
-import nl.knaw.dans.nbnresolver.response.Created;
-import nl.knaw.dans.nbnresolver.response.Ok;
-import nl.knaw.dans.nbnresolver.response.OperationResult;
 import io.swagger.model.NbnLocationsObject;
 import io.swagger.model.User;
+import nl.knaw.dans.nbnresolver.response.Conflict;
+import nl.knaw.dans.nbnresolver.response.Created;
+import nl.knaw.dans.nbnresolver.response.OperationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +13,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +23,7 @@ public class Dao {
   public Dao() {
   }
 
-  public static User getUser(String username, String password) throws Exception {
+  public static User getUserByCredentials(String username, String password) throws Exception {
     User user = null;
     ResultSet rs = null;
     Connection conn = null;
@@ -73,10 +69,7 @@ public class Dao {
 
     boolean idExists = false;
     //    Get rid of the fragment part:
-    String unfragmented = identifier;
-    if (identifier != null && identifier.contains("#")) {
-      unfragmented = identifier.split("#")[0];
-    }
+    String unfragmented = getUnfragmentedString(identifier);
 
     logger.info("Getting location(s) for: " + unfragmented);
 
@@ -115,70 +108,112 @@ public class Dao {
     return idExists;
   }
 
-  //TODO: implement rollback: combine transactions in stored procedures
-  public static OperationResult createOrUpdateNbn(NbnLocationsObject nbnLocationsObject) {
+  public static OperationResult createNbn(NbnLocationsObject nbnLocationsObject, int registantId) {
     OperationResult result = null;
     String identifier = nbnLocationsObject.getIdentifier();
     //    Get rid of the fragment part:
-    String unfragmented = identifier;
-    if (identifier != null && identifier.contains("#")) {
-      unfragmented = identifier.split("#")[0];
-    }
+    String unfragmented = getUnfragmentedString(identifier);
 
     logger.info("Inserting in database: " + nbnLocationsObject.toString());
     Connection conn = null;
 
-    try {
-      conn = PooledDataSource.getConnection();
-      conn.setAutoCommit(false);
-      boolean idExists = getIdentifier(identifier);
+    boolean idExists = getIdentifier(identifier);
+    if (idExists) {
+      result = new Conflict(identifier);
+    }
+    else {
+      try {
+        conn = PooledDataSource.getConnection();
+        conn.setAutoCommit(false);
 
-      for (String location : nbnLocationsObject.getLocations()) {
-        String insertNbnStoredProcedureQuery = getIdentifier(identifier) ? "{call insertNbnLocation(?, ?)}" : "{call insertNbnObject(?, ?)}";
-        CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
-        callableStatement.setString(1, unfragmented);
-        callableStatement.setString(2, location);
-        int sqlResult = (callableStatement.executeUpdate());
-        if (sqlResult == 0) {
-          if (idExists) {
-            result = new Ok(new ApiResponseMessage(ApiResponseMessage.INFO, "OK (updated existing)"));
-          }
-          else {
+        for (String location : nbnLocationsObject.getLocations()) {
+          String insertNbnStoredProcedureQuery = "{call insertNbnObject(?, ?, ?, ?)}";
+          CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
+          callableStatement.setString(1, unfragmented);
+          callableStatement.setString(2, location);
+          callableStatement.setInt(3, registantId);
+          callableStatement.setBoolean(4, true);
+          int sqlResult = (callableStatement.executeUpdate());
+          if (sqlResult == 0) {
             result = new Created(identifier);
           }
         }
       }
-    }
-    catch (SQLException e) {
-      if (e instanceof SQLIntegrityConstraintViolationException) {
-        result = new Conflict(identifier);
+      catch (SQLException e) {
+        logger.error("Error inserting nbn object in database..");
+        e.printStackTrace();
       }
-      else {
-        //TODO: fix this
-        result = new BadRequest(identifier);
-      }
-
-    }
-    finally {
-      try {
-        assert conn != null;
-        conn.close();
-      }
-      catch (Exception ex) {
-        ex.printStackTrace();
+      finally {
+        try {
+          assert conn != null;
+          conn.close();
+        }
+        catch (Exception ex) {
+          ex.printStackTrace();
+        }
       }
     }
     return result;
+  }
+
+  public static void updateNbN(String nbn) {
+    //
+  }
+
+  private static void deleteNbn(String nbn) {
+    //
+  }
+
+  public static int getRegistrantIdByOrgPrefix(String org_prefix) {
+    int registrantId = 0;
+    ResultSet rs = null;
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+
+    try {
+      conn = PooledDataSource.getConnection();
+      pstmt = conn.prepareStatement("SELECT C.registrant_id FROM nbnresolver.credentials C INNER JOIN registrant R ON R.registrant_id = C.registrant_id WHERE C.org_prefix = ?;");
+      pstmt.setString(1, org_prefix);
+      rs = pstmt.executeQuery();
+
+      while (rs.next())
+        registrantId = rs.getInt("registrant_id");
+    }
+    catch (SQLException e) {
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (pstmt != null) {
+          pstmt.close();
+        }
+        if (conn != null) {
+          conn.close();
+        }
+      }
+      catch (Exception ex) {
+        //ignored
+      }
+    }
+    return registrantId;
+
+  }
+
+  private static String getUnfragmentedString(String identifier) {
+    String unfragmented = identifier;
+    if (identifier != null && identifier.contains("#")) {
+      unfragmented = identifier.split("#")[0];
+    }
+    return unfragmented;
   }
 
   public static List<String> getLocations(String identifier) {
     List<String> locations = new ArrayList<>();
 
     //    Get rid of the fragment part:
-    String unfragmented = identifier;
-    if (identifier != null && identifier.contains("#")) {
-      unfragmented = identifier.split("#")[0];
-    }
+    String unfragmented = getUnfragmentedString(identifier);
 
     logger.info("Getting location(s) for: " + unfragmented);
 
@@ -258,7 +293,7 @@ public class Dao {
   }
 
   public static User getUserByToken(String token) throws Exception {
-    User user = null;
+    User user;
     ResultSet rs = null;
     Connection conn = null;
     PreparedStatement pstmt = null;
