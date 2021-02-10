@@ -23,47 +23,6 @@ public class Dao {
   public Dao() {
   }
 
-  public static User getUserByCredentials(String username, String password) throws Exception {
-    User user = null;
-    ResultSet rs = null;
-    Connection conn = null;
-    PreparedStatement pstmt = null;
-
-    try {
-      conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT C.org_prefix FROM nbnresolver.credentials C WHERE C.username = ? AND C.password = ?;");
-      pstmt.setString(1, username);
-      pstmt.setString(2, password);
-      rs = pstmt.executeQuery();
-      if (!rs.next()) {
-        throw new InvalidCredentialsException("Provided credentials were invalid");
-      }
-      else {
-        user = new User();
-        user.setOrgPrefix(rs.getString(1));
-      }
-    }
-
-    catch (SQLException e) {
-    }
-    finally {
-      try {
-        if (rs != null) {
-          rs.close();
-        }
-        if (pstmt != null) {
-          pstmt.close();
-        }
-        if (conn != null) {
-          conn.close();
-        }
-      }
-      catch (Exception ex) {
-      }
-    }
-    return user;
-  }
-
   public static boolean getIdentifier(String identifier) {
     boolean idExists = false;
     String unfragmented = getUnfragmentedString(identifier);
@@ -83,6 +42,8 @@ public class Dao {
       }
     }
     catch (SQLException e) {
+      logger.error("Nbn could not be retrieved from database for Nbn: " + identifier);
+      logger.debug(e.getMessage());
     }
     finally {
       try {
@@ -132,7 +93,8 @@ public class Dao {
         }
       }
       catch (SQLException e) {
-        logger.error("Error inserting nbn object in database.");
+        logger.error("Error inserting nbn object " + identifier + " in database.");
+        logger.debug(e.getMessage());
       }
       finally {
         try {
@@ -147,20 +109,23 @@ public class Dao {
     return result;
   }
 
-  public static void deleteNbn(String nbn) {
+  public static void deleteNbn(String identifier) {
     Connection conn = null;
     try {
       conn = PooledDataSource.getConnection();
       conn.setAutoCommit(false);
       String deleteNbnStoredProcedureQuery = "{call deleteNbnObject(?)}";
       CallableStatement callableStatement = conn.prepareCall(deleteNbnStoredProcedureQuery);
-      callableStatement.setString(1, nbn);
+      callableStatement.setString(1, identifier);
       callableStatement.executeUpdate();
     }
     catch (SQLException e) {
+      logger.error("Error deleting nbn object " + identifier + " in database.");
+      logger.debug(e.getMessage());
     }
     finally {
       try {
+
         if (conn != null) {
           conn.close();
         }
@@ -186,6 +151,8 @@ public class Dao {
         registrantId = rs.getInt("registrant_id");
     }
     catch (SQLException e) {
+      logger.error("Registrant Id could not be retrieved from database for organisation prefix: " + org_prefix);
+      logger.debug(e.getMessage());
     }
     finally {
       try {
@@ -226,6 +193,8 @@ public class Dao {
       }
     }
     catch (SQLException e) {
+      logger.error("Locations could not be retrieved from database for Nbn: " + identifier);
+      logger.debug(e.getMessage());
     }
     finally {
       try {
@@ -264,6 +233,9 @@ public class Dao {
       }
     }
     catch (SQLException e) {
+      logger.error("Nbn could not be retrieved from database for location: " + location);
+      logger.debug(e.getMessage());
+
     }
     finally {
       try {
@@ -281,6 +253,50 @@ public class Dao {
       }
     }
     return nbns;
+  }
+
+  public static User getUserByCredentials(String username, String password) throws Exception {
+    User user = null;
+    ResultSet rs = null;
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+
+    try {
+      conn = PooledDataSource.getConnection();
+      pstmt = conn.prepareStatement("SELECT C.org_prefix FROM nbnresolver.credentials C WHERE C.username = ? AND C.password = ?;");
+      pstmt.setString(1, username);
+      pstmt.setString(2, password);
+      rs = pstmt.executeQuery();
+      if (!rs.next()) {
+        throw new InvalidCredentialsException("Provided credentials were invalid");
+      }
+      else {
+        user = new User();
+        user.setOrgPrefix(rs.getString(1));
+      }
+    }
+
+    catch (SQLException e) {
+      logger.error("A Database error occurred. User could not be retrieved from database with credentials");
+      logger.debug(e.getMessage());
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (pstmt != null) {
+          pstmt.close();
+        }
+        if (conn != null) {
+          conn.close();
+        }
+      }
+      catch (Exception ex) {
+        //ignored
+      }
+    }
+    return user;
   }
 
   public static User getUserByToken(String token) throws Exception {
