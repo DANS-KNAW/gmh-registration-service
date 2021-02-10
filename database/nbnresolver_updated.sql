@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `nbnresolver`.`registrant` (
   PRIMARY KEY (`registrant_id`),
   UNIQUE INDEX `registrant_groupid_UNIQUE` (`registrant_groupid` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 6
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `nbnresolver`.`credentials` (
     FOREIGN KEY (`registrant_id`)
     REFERENCES `nbnresolver`.`registrant` (`registrant_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 3
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `nbnresolver`.`identifier` (
   UNIQUE INDEX `identifier_value_UNIQUE` (`identifier_value` ASC) VISIBLE,
   INDEX `idxIdentifierValue` (`identifier_value` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 3395
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS `nbnresolver`.`location` (
   PRIMARY KEY (`location_id`),
   INDEX `idxLocationUrl` (`location_url` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 4729
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
