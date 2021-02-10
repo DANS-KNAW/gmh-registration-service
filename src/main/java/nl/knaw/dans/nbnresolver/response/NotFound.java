@@ -1,8 +1,6 @@
 package nl.knaw.dans.nbnresolver.response;
 
-import io.swagger.api.ApiResponseMessage;
-
-import static javax.ws.rs.core.Response.*;
+import static javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 public class NotFound implements OperationResult {
@@ -20,7 +18,7 @@ public class NotFound implements OperationResult {
 
   @Override
   public Object getResponseBody() {
-    return new ApiResponseMessage(ApiResponseMessage.WARNING, "Supplied URN:NBN identifier not found: " + identifier);
+    return new ResponseMessage(NOT_FOUND.getStatusCode(), "Supplied URN:NBN identifier not found: " + identifier);
   }
 }
 

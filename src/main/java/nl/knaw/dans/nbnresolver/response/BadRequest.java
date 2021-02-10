@@ -4,6 +4,9 @@ import io.swagger.api.ApiResponseMessage;
 
 import javax.ws.rs.core.Response;
 
+import static javax.ws.rs.core.Response.*;
+import static javax.ws.rs.core.Response.Status.*;
+
 public class BadRequest implements OperationResult {
 
   String identifier;
@@ -13,12 +16,12 @@ public class BadRequest implements OperationResult {
   }
 
   @Override
-  public Response.Status getStatus() {
-    return Response.Status.BAD_REQUEST;
+  public Status getStatus() {
+    return BAD_REQUEST;
   }
 
   @Override
   public Object getResponseBody() {
-    return new ApiResponseMessage(ApiResponseMessage.INFO, "Invalid URN:NBN identifier pattern or location uri(s) supplied: " + identifier);
+    return new ResponseMessage(BAD_REQUEST.getStatusCode(), "Invalid URN:NBN identifier pattern or location uri(s) supplied: " + identifier);
   }
 }

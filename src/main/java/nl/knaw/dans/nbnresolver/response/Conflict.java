@@ -1,7 +1,5 @@
 package nl.knaw.dans.nbnresolver.response;
 
-import io.swagger.api.ApiResponseMessage;
-
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.CONFLICT;
@@ -21,6 +19,6 @@ public class Conflict implements OperationResult {
 
   @Override
   public Object getResponseBody() {
-    return new ApiResponseMessage(ApiResponseMessage.INFO, "Conflict, resource already exists: " + identifier);
+    return new ResponseMessage(CONFLICT.getStatusCode(), "Conflict, resource already exists: " + identifier);
   }
 }

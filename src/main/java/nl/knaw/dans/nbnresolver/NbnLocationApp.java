@@ -1,6 +1,5 @@
 package nl.knaw.dans.nbnresolver;
 
-import io.swagger.api.ApiResponseMessage;
 import io.swagger.model.NbnLocationsObject;
 import nl.knaw.dans.nbnresolver.jdbc.Dao;
 import nl.knaw.dans.nbnresolver.response.BadRequest;
@@ -9,6 +8,7 @@ import nl.knaw.dans.nbnresolver.response.Forbidden;
 import nl.knaw.dans.nbnresolver.response.NotFound;
 import nl.knaw.dans.nbnresolver.response.Ok;
 import nl.knaw.dans.nbnresolver.response.OperationResult;
+import nl.knaw.dans.nbnresolver.response.ResponseMessage;
 import nl.knaw.dans.nbnresolver.validation.LocationValidator;
 import nl.knaw.dans.nbnresolver.validation.NbnValidator;
 
@@ -16,6 +16,8 @@ import javax.ws.rs.core.SecurityContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static javax.ws.rs.core.Response.Status.OK;
 
 public class NbnLocationApp {
 
@@ -78,7 +80,7 @@ public class NbnLocationApp {
         Dao.deleteNbn(identifier);
         result = Dao.createNbn(nbnLocationsObject, registrantId);
         if (result instanceof Created) {
-          result = new Ok(new ApiResponseMessage(4, "OK (updated existing)"));
+          result = new Ok(new ResponseMessage(OK.getStatusCode(), "OK (updated existing)"));
         }
       }
       else {

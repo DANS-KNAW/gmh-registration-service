@@ -21,6 +21,6 @@ public class Created implements OperationResult {
 
   @Override
   public Object getResponseBody() {
-    return new ApiResponseMessage(ApiResponseMessage.INFO, "Successful operation (created new): " + identifier);
+    return new ResponseMessage(CREATED.getStatusCode(),"Successful operation (created new): " + identifier);
   }
 }

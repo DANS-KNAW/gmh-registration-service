@@ -1,20 +1,20 @@
 package nl.knaw.dans.nbnresolver.response;
 
-import io.swagger.api.ApiResponseMessage;
-
 import static javax.ws.rs.core.Response.Status;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
 public class Forbidden implements OperationResult {
 
-  public Forbidden() {}
+  public Forbidden() {
+  }
 
   @Override
   public Status getStatus() {
-    return Status.FORBIDDEN;
+    return FORBIDDEN;
   }
 
   @Override
   public Object getResponseBody() {
-    return new ApiResponseMessage(ApiResponseMessage.INFO, "URN:NBN identifier is valid, but does not match the prefix of the authenticated user");
+    return new ResponseMessage(FORBIDDEN.getStatusCode(), "URN:NBN identifier is valid, but does not match the prefix of the authenticated user");
   }
 }
