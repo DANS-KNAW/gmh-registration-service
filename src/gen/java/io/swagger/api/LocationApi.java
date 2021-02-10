@@ -52,25 +52,6 @@ public class LocationApi {
     this.delegate = delegate;
   }
 
-  @GET
-  @Path("/swagger")
-  @Produces(MediaType.TEXT_HTML)
-  public URL getSwaggerUI(){
-
-    ClassLoader c = Thread.currentThread().getContextClassLoader();
-    return c.getResource("/src/main/webapp/dist/index.html");
-
-
-//    try {
-//      String base = ("/src/main/webapp/dist/index.html");
-//      File f = new File(base);
-//      System.out.println("file" + f);
-//      return new FileInputStream(f);
-//    } catch (FileNotFoundException e) {
-//      // log the error?
-//      return null;
-//    }
-  }
 
 
   @GET

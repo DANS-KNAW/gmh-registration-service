@@ -307,7 +307,7 @@ public class Dao {
 
     try {
       conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT  C.org_prefix FROM nbnresolver.credentials C WHERE C.token = ?;");
+      pstmt = conn.prepareStatement("SELECT C.org_prefix FROM nbnresolver.credentials C WHERE C.token = ?;");
       pstmt.setString(1, token);
       rs = pstmt.executeQuery();
       if (!rs.next()) {
