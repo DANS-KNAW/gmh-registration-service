@@ -72,7 +72,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     requestContext.abortWith(Response.status(unauthorized.getStatus()).entity(unauthorized.getResponseBody()).build());
   }
 
-  // Validates by getting the current User by the token from the request. If the db returns no result it means the token is not in the db and therefore not valid.
+  // Validates by getting the current User by the token from the request.
+  // If the db returns no result it means the token is not in the db and therefore not valid.
   private User validateToken(String token, ContainerRequestContext requestContext) {
 
     User currentUser = null;
