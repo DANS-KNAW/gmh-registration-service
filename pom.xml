@@ -7,11 +7,11 @@
     <name>gmh-registration-service</name>
     <version>1.0.0</version>
 
-    <parent>
-        <groupId>nl.knaw.dans.shared</groupId>
-        <artifactId>dans-java-project</artifactId>
-        <version>4.0.1</version>
-    </parent>
+<!--    <parent>-->
+<!--        <groupId>nl.knaw.dans.shared</groupId>-->
+<!--        <artifactId>dans-java-project</artifactId>-->
+<!--        <version>4.0.1</version>-->
+<!--    </parent>-->
 
     <description>
         The gmh-registration-service is a REST-API interface managed by OpenAPI spec, blah
@@ -34,7 +34,6 @@
                 <version>3.1.0</version>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.6</version>
                 <executions>
@@ -110,19 +109,25 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>com.mycila</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <configuration combine.self="append">
-                    <includes>
-                        <include>src/main/java/**/*.java</include>
-                        <include>src/test/java/**/*.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <dependencies>
+
+        <!-- API, java.xml.bind module -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+
+        <!-- Runtime, com.sun.xml.bind module -->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+
+
         <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -231,7 +236,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <swagger-core-version>2.0.0</swagger-core-version>
-        <jetty-version>9.2.9.v20150224</jetty-version>
+        <jetty-version>9.4.14.v20181114</jetty-version>
         <jersey2-version>2.27</jersey2-version>
         <jackson-version>2.9.5</jackson-version>
         <junit-version>4.13.1</junit-version>
@@ -239,6 +244,5 @@
         <servlet-api-version>2.5</servlet-api-version>
         <beanvalidation-version>1.1.0.Final</beanvalidation-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <swagger-ui.version>3.1.2</swagger-ui.version>
     </properties>
 </project>
