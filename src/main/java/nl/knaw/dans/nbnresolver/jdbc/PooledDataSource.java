@@ -35,10 +35,15 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 public class PooledDataSource {
@@ -47,10 +52,20 @@ public class PooledDataSource {
   private static final Logger logger = LoggerFactory.getLogger(PooledDataSource.class);
 
   static {
-    ResourceBundle properties = ResourceBundle.getBundle("application");
-    ds.setUrl(properties.getString("MYSQL_DB_URL"));
-    ds.setUsername(properties.getString("MYSQL_DB_USERNAME"));
-    ds.setPassword(properties.getString("MYSQL_DB_PASSWORD"));
+    Properties properties = new Properties();
+    InputStream inputStream = null;
+    try {
+      inputStream = new FileInputStream("src/main/cfg/application.properties");
+      properties.load(inputStream);
+    }
+    catch (IOException e) {
+      logger.error("Could not load application properties");
+      e.printStackTrace();
+    }
+
+    ds.setUrl(properties.getProperty("MYSQL_DB_URL"));
+    ds.setUsername(properties.getProperty("MYSQL_DB_USERNAME"));
+    ds.setPassword(properties.getProperty("MYSQL_DB_PASSWORD"));
     ds.setMinIdle(2);
     ds.setMaxIdle(10);
     ds.setMaxActive(15);
