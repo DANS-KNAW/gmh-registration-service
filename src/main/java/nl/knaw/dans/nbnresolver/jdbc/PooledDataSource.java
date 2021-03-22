@@ -15,28 +15,10 @@
  */
 package nl.knaw.dans.nbnresolver.jdbc;
 
-/**
- * Copyright (C) 2020 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import org.apache.commons.dbcp.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -44,36 +26,41 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 public class PooledDataSource {
 
-  private static final BasicDataSource ds = new BasicDataSource();
+  private static final BasicDataSource DS = new BasicDataSource();
   private static final Logger logger = LoggerFactory.getLogger(PooledDataSource.class);
+  private static final String PROPERTIES_FILE = "application.properties";
+  private static final Properties PROPERTIES = new Properties();
 
   static {
-    Properties properties = new Properties();
-    InputStream inputStream = null;
-    try {
-      inputStream = new FileInputStream("src/main/cfg/application.properties");
-      properties.load(inputStream);
-    }
-    catch (IOException e) {
-      logger.error("Could not load application properties");
-      e.printStackTrace();
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    InputStream propertiesFile = classLoader.getResourceAsStream(PROPERTIES_FILE);
+
+    if (propertiesFile == null) {
+      throw new RuntimeException("Properties file '" + PROPERTIES_FILE + "' is missing in classpath.");
     }
 
-    ds.setUrl(properties.getProperty("MYSQL_DB_URL"));
-    ds.setUsername(properties.getProperty("MYSQL_DB_USERNAME"));
-    ds.setPassword(properties.getProperty("MYSQL_DB_PASSWORD"));
-    ds.setMinIdle(2);
-    ds.setMaxIdle(10);
-    ds.setMaxActive(15);
+    try {
+      PROPERTIES.load(propertiesFile);
+    }
+    catch (IOException e) {
+      logger.error("Cannot load properties file '" + PROPERTIES_FILE + "'.", e);
+    }
+
+    DS.setUrl(PROPERTIES.getProperty("MYSQL_DB_URL"));
+    DS.setUsername(PROPERTIES.getProperty("MYSQL_DB_USERNAME"));
+    DS.setPassword(PROPERTIES.getProperty("MYSQL_DB_PASSWORD"));
+    DS.setMinIdle(2);
+    DS.setMaxIdle(10);
+    DS.setMaxActive(15);
+
   }
 
   public static Connection getConnection() throws SQLException {
     printDbStatus();
-    return ds.getConnection();
+    return DS.getConnection();
   }
 
   private PooledDataSource() {
@@ -81,7 +68,7 @@ public class PooledDataSource {
 
   // This method is used to print the Connection Pool status:
   private static void printDbStatus() {
-    logger.debug("Max.: " + ds.getMaxActive() + "; Active: " + ds.getNumActive() + "; Idle: " + ds.getNumIdle());
+    logger.debug("Max.: " + DS.getMaxActive() + "; Active: " + DS.getNumActive() + "; Idle: " + DS.getNumIdle());
   }
 
   public static void testDBConnection() {

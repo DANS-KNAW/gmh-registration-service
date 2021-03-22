@@ -1,3 +1,20 @@
+<!--
+
+    Copyright (C) 2018 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -7,11 +24,11 @@
     <name>gmh-registration-service</name>
     <version>1.0.0</version>
 
-<!--    <parent>-->
-<!--        <groupId>nl.knaw.dans.shared</groupId>-->
-<!--        <artifactId>dans-java-project</artifactId>-->
-<!--        <version>4.0.1</version>-->
-<!--    </parent>-->
+    <parent>
+        <groupId>nl.knaw.dans.shared</groupId>
+        <artifactId>dans-java-project</artifactId>
+        <version>4.0.1</version>
+    </parent>
 
     <description>
         The gmh-registration-service is a REST-API interface managed by OpenAPI spec, blah
@@ -113,21 +130,6 @@
     </build>
     <dependencies>
 
-        <!-- API, java.xml.bind module -->
-        <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>2.3.2</version>
-        </dependency>
-
-        <!-- Runtime, com.sun.xml.bind module -->
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-            <version>2.3.2</version>
-        </dependency>
-
-
         <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -212,6 +214,12 @@
             <artifactId>migbase64</artifactId>
             <version>2.2</version>
         </dependency>
+        <!-- Authentication -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.0</version>
+        </dependency>
 
         <!-- Bean Validation API support -->
         <dependency>
@@ -220,8 +228,8 @@
             <version>${beanvalidation-version}</version>
             <scope>provided</scope>
         </dependency>
-
     </dependencies>
+
     <repositories>
         <repository>
             <id>sonatype-snapshots</id>
@@ -230,13 +238,34 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>dans-releases</id>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>https://maven.dans.knaw.nl/releases/</url>
+        </repository>
+        <repository>
+            <id>dans-snapshots</id>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>https://maven.dans.knaw.nl/snapshots/</url>
+        </repository>
     </repositories>
+
     <properties>
         <java.version>1.8</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <swagger-core-version>2.0.0</swagger-core-version>
-        <jetty-version>9.4.14.v20181114</jetty-version>
+        <jetty-version>9.2.9.v20150224</jetty-version>
         <jersey2-version>2.27</jersey2-version>
         <jackson-version>2.9.5</jackson-version>
         <junit-version>4.13.1</junit-version>
