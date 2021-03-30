@@ -17,9 +17,6 @@ package nl.knaw.dans.nbnresolver.jdbc;
 
 import io.swagger.model.NbnLocationsObject;
 import io.swagger.model.User;
-import nl.knaw.dans.nbnresolver.response.Conflict;
-import nl.knaw.dans.nbnresolver.response.Created;
-import nl.knaw.dans.nbnresolver.response.OperationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +35,7 @@ public class Dao {
   public Dao() {
   }
 
-  public static boolean getIdentifier(String identifier) {
+  public static boolean getIdentifier(String identifier) throws SQLException {
     boolean idExists = false;
     String unfragmented = getUnfragmentedString(identifier);
 
@@ -46,40 +43,34 @@ public class Dao {
     Connection conn = null;
     PreparedStatement pstmt = null;
 
-    try {
-      conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT identifier_id FROM identifier WHERE identifier.identifier_value = ?;");
-      pstmt.setString(1, unfragmented);
-      rs = pstmt.executeQuery();
+    conn = PooledDataSource.getConnection();
+    pstmt = conn.prepareStatement("SELECT identifier_id FROM identifier WHERE identifier.identifier_value = ?;");
+    pstmt.setString(1, unfragmented);
+    rs = pstmt.executeQuery();
 
-      if (rs.next()) {
-        idExists = true;
+    if (rs.next()) {
+      idExists = true;
+    }
+
+    try {
+      if (rs != null) {
+        rs.close();
+      }
+      if (pstmt != null) {
+        pstmt.close();
+      }
+      if (conn != null) {
+        conn.close();
       }
     }
-    catch (SQLException e) {
-      logger.error("Nbn could not be retrieved from database for Nbn: " + identifier);
-      logger.debug(e.getMessage());
+    catch (Exception ex) {
     }
-    finally {
-      try {
-        if (rs != null) {
-          rs.close();
-        }
-        if (pstmt != null) {
-          pstmt.close();
-        }
-        if (conn != null) {
-          conn.close();
-        }
-      }
-      catch (Exception ex) {
-      }
-    }
+
     return idExists;
   }
 
-  public static OperationResult createNbn(NbnLocationsObject nbnLocationsObject, int registantId) {
-    OperationResult result = null;
+  public static int createNbn(NbnLocationsObject nbnLocationsObject, int registantId) {
+    int result = -1;
     String identifier = nbnLocationsObject.getIdentifier();
     String unfragmented = getUnfragmentedString(identifier);
 
@@ -87,52 +78,46 @@ public class Dao {
 
     Connection conn = null;
 
-    boolean idExists = getIdentifier(identifier);
-    if (idExists) {
-      result = new Conflict(identifier);
-    }
-    else {
-      try {
-        conn = PooledDataSource.getConnection();
-        conn.setAutoCommit(false);
+    try {
+      conn = PooledDataSource.getConnection();
+      conn.setAutoCommit(false);
 
-        for (String location : nbnLocationsObject.getLocations()) {
-          String insertNbnStoredProcedureQuery = "{call insertNbnObject(?, ?, ?, ?)}";
-          CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
-          callableStatement.setString(1, unfragmented);
-          callableStatement.setString(2, location);
-          callableStatement.setInt(3, registantId);
-          callableStatement.setBoolean(4, true);
-          callableStatement.executeUpdate();
-          result = new Created(identifier);
-        }
+      for (String location : nbnLocationsObject.getLocations()) {
+        String insertNbnStoredProcedureQuery = "{call insertNbnObject(?, ?, ?, ?)}";
+        CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
+        callableStatement.setString(1, unfragmented);
+        callableStatement.setString(2, location);
+        callableStatement.setInt(3, registantId);
+        callableStatement.setBoolean(4, true);
+        result = callableStatement.executeUpdate();
       }
-      catch (SQLException e) {
-        logger.error("Error inserting nbn object " + identifier + " in database.");
-        logger.debug(e.getMessage());
+    }
+    catch (SQLException e) {
+      logger.error("Error inserting nbn object " + identifier + " in database.");
+      logger.debug(e.getMessage());
+    }
+    finally {
+      try {
+        assert conn != null;
+        conn.close();
       }
-      finally {
-        try {
-          assert conn != null;
-          conn.close();
-        }
-        catch (Exception ex) {
-          ex.printStackTrace();
-        }
+      catch (Exception ex) {
+        ex.printStackTrace();
       }
     }
     return result;
   }
 
-  public static void deleteNbn(String identifier) {
+  public static int deleteNbn(String identifier) {
     Connection conn = null;
+    int sqlResult = -1;
     try {
       conn = PooledDataSource.getConnection();
       conn.setAutoCommit(false);
       String deleteNbnStoredProcedureQuery = "{call deleteNbnObject(?)}";
       CallableStatement callableStatement = conn.prepareCall(deleteNbnStoredProcedureQuery);
       callableStatement.setString(1, identifier);
-      callableStatement.executeUpdate();
+      sqlResult = callableStatement.executeUpdate();
     }
     catch (SQLException e) {
       logger.error("Error deleting nbn object " + identifier + " in database.");
@@ -148,44 +133,29 @@ public class Dao {
       catch (Exception ex) {
       }
     }
+    return sqlResult;
   }
 
-  public static int getRegistrantIdByOrgPrefix(String org_prefix) {
+  public static int getRegistrantIdByOrgPrefix(String org_prefix) throws SQLException {
     int registrantId = 0;
-    ResultSet rs = null;
-    Connection conn = null;
-    PreparedStatement pstmt = null;
+
+    Connection conn = PooledDataSource.getConnection();
+    PreparedStatement pstmt = conn.prepareStatement("SELECT C.registrant_id FROM nbnresolver.credentials C INNER JOIN registrant R ON R.registrant_id = C.registrant_id WHERE C.org_prefix = ?;");
+    pstmt.setString(1, org_prefix);
+    ResultSet rs = pstmt.executeQuery();
+
+    while (rs.next())
+      registrantId = rs.getInt("registrant_id");
 
     try {
-      conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT C.registrant_id FROM nbnresolver.credentials C INNER JOIN registrant R ON R.registrant_id = C.registrant_id WHERE C.org_prefix = ?;");
-      pstmt.setString(1, org_prefix);
-      rs = pstmt.executeQuery();
-
-      while (rs.next())
-        registrantId = rs.getInt("registrant_id");
+      rs.close();
+      pstmt.close();
+      conn.close();
     }
-    catch (SQLException e) {
-      logger.error("Registrant Id could not be retrieved from database for organisation prefix: " + org_prefix);
-      logger.debug(e.getMessage());
-    }
-    finally {
-      try {
-        if (rs != null) {
-          rs.close();
-        }
-        if (pstmt != null) {
-          pstmt.close();
-        }
-        if (conn != null) {
-          conn.close();
-        }
-      }
-      catch (Exception ex) {
-      }
+    catch (Exception ex) {
+      logger.error(ex.getMessage());
     }
     return registrantId;
-
   }
 
   public static List<String> getLocations(String identifier) {

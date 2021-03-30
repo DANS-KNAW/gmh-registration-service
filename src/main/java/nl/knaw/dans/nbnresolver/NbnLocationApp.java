@@ -18,16 +18,21 @@ package nl.knaw.dans.nbnresolver;
 import io.swagger.model.NbnLocationsObject;
 import nl.knaw.dans.nbnresolver.jdbc.Dao;
 import nl.knaw.dans.nbnresolver.response.BadRequest;
+import nl.knaw.dans.nbnresolver.response.Conflict;
 import nl.knaw.dans.nbnresolver.response.Created;
 import nl.knaw.dans.nbnresolver.response.Forbidden;
+import nl.knaw.dans.nbnresolver.response.InternalServerError;
 import nl.knaw.dans.nbnresolver.response.NotFound;
 import nl.knaw.dans.nbnresolver.response.Ok;
 import nl.knaw.dans.nbnresolver.response.OperationResult;
 import nl.knaw.dans.nbnresolver.response.ResponseMessage;
 import nl.knaw.dans.nbnresolver.validation.LocationValidator;
 import nl.knaw.dans.nbnresolver.validation.NbnValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.SecurityContext;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,108 +41,97 @@ import static javax.ws.rs.core.Response.Status.OK;
 
 public class NbnLocationApp {
 
+  private static final Logger logger = LoggerFactory.getLogger(NbnLocationApp.class);
+
   public NbnLocationApp() {
   }
 
   public OperationResult doCreateNbnLocations(NbnLocationsObject body, SecurityContext securityContext) {
-    OperationResult result;
 
     boolean nbnIsValid = NbnValidator.validate(body.getIdentifier());
     boolean locationsValid = LocationValidator.validateAllLocations(body.getLocations());
-    int registrantId = Dao.getRegistrantIdByOrgPrefix(securityContext.getUserPrincipal().getName());
 
-    if (nbnIsValid && locationsValid) {
-      String identifier = body.getIdentifier();
-      if (NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())) {
-        result = Dao.createNbn(body, registrantId);
-      }
+    try {
+      int registrantId = Dao.getRegistrantIdByOrgPrefix(securityContext.getUserPrincipal().getName());
+
+      if (!nbnIsValid || !locationsValid)
+        return new BadRequest(body.getIdentifier());
+      if (!NbnValidator.prefixMatches(body.getIdentifier(), securityContext.getUserPrincipal().getName()))
+        return new Forbidden();
+      if (Dao.getIdentifier(body.getIdentifier()))
+        return new Conflict(body.getIdentifier());
       else {
-        result = new Forbidden();
+        Dao.createNbn(body, registrantId);
+        return new Created(body.getIdentifier());
       }
     }
-    else {
-      result = new BadRequest(body.getIdentifier());
+    catch (SQLException e) {
+      logger.error("A Sql error occurred: " + e);
+      return new InternalServerError();
     }
-    return result;
-
   }
 
   public OperationResult doGetNbnRecord(String identifier) {
-    OperationResult result;
-
     Map<String, Object> nbnRecord = new HashMap<>();
 
-    if (NbnValidator.validate(identifier)) {
-      List<String> locations = Dao.getLocations(identifier);
-      if (locations.isEmpty()) {
-        result = new NotFound(identifier);
-      }
-      else {
-        nbnRecord.put("identifier", identifier);
-        nbnRecord.put("locations", locations);
-        result = new Ok(nbnRecord);
-      }
+    if (!NbnValidator.validate(identifier))
+      return new BadRequest(identifier);
+
+    List<String> locations = Dao.getLocations(identifier);
+    if (locations.isEmpty()) {
+      return new NotFound(identifier);
     }
     else {
-      result = new BadRequest(identifier);
+      nbnRecord.put("identifier", identifier);
+      nbnRecord.put("locations", locations);
+      return new Ok(nbnRecord);
     }
-
-    return result;
   }
 
   public OperationResult doUpdateNbnRecord(List<String> body, String identifier, SecurityContext securityContext) {
-    OperationResult result;
+    NbnLocationsObject nbnLocationsObject = getNbnLocationsObject(body, identifier);
 
-    if (NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())) {
+    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()))
+      return new Forbidden();
+
+    try {
       int registrantId = Dao.getRegistrantIdByOrgPrefix(securityContext.getUserPrincipal().getName());
-      NbnLocationsObject nbnLocationsObject = getNbnLocationsObject(body, identifier);
       if (Dao.getIdentifier(identifier)) {
         Dao.deleteNbn(identifier);
-        result = Dao.createNbn(nbnLocationsObject, registrantId);
-        if (result instanceof Created) {
-          result = new Ok(new ResponseMessage(OK.getStatusCode(), "OK (updated existing)"));
-        }
+        Dao.createNbn(nbnLocationsObject, registrantId);
+        return new Ok(new ResponseMessage(OK.getStatusCode(), "OK (updated existing)"));
       }
       else {
-        result = Dao.createNbn(nbnLocationsObject, registrantId);
+        Dao.createNbn(nbnLocationsObject, registrantId);
+        return new Created(identifier);
       }
     }
-    else {
-      result = new Forbidden();
+    catch (SQLException e) {
+      logger.error("A Sql error occurred: " + e);
+      return new InternalServerError();
     }
-    return result;
   }
 
   public OperationResult doGetLocationsByNbn(String identifier) {
-    OperationResult result;
-
-    if (NbnValidator.validate(identifier)) {
-      List<String> locations = Dao.getLocations(identifier);
-      if (locations.isEmpty()) {
-        result = new NotFound(identifier);
-      }
-      else {
-        result = new Ok(locations);
-      }
-    }
+    if (!NbnValidator.validate(identifier))
+      return new BadRequest(identifier);
+    List<String> locations = Dao.getLocations(identifier);
+    if (locations.isEmpty())
+      return new NotFound(identifier);
     else {
-      result = new BadRequest(identifier);
+      return new Ok(locations);
     }
-    return result;
   }
 
   public OperationResult doGetNbnByLocation(String location) {
-    OperationResult result;
-
     List<String> nbn = Dao.getNbnByLocation(location);
 
     if (nbn.size() > 0) {
-      result = new Ok(nbn);
+      return new Ok(nbn);
     }
     else {
-      result = new NotFound(location);
+      return new NotFound(location);
     }
-    return result;
   }
 
   private NbnLocationsObject getNbnLocationsObject(List<String> body, String identifier) {
