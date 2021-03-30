@@ -39,101 +39,65 @@ public class Dao {
     boolean idExists = false;
     String unfragmented = getUnfragmentedString(identifier);
 
-    ResultSet rs = null;
-    Connection conn = null;
-    PreparedStatement pstmt = null;
-
-    conn = PooledDataSource.getConnection();
-    pstmt = conn.prepareStatement("SELECT identifier_id FROM identifier WHERE identifier.identifier_value = ?;");
+    Connection conn = PooledDataSource.getConnection();
+    PreparedStatement pstmt = conn.prepareStatement("SELECT identifier_id FROM identifier WHERE identifier.identifier_value = ?;");
     pstmt.setString(1, unfragmented);
-    rs = pstmt.executeQuery();
+    ResultSet rs = pstmt.executeQuery();
 
     if (rs.next()) {
       idExists = true;
     }
 
     try {
-      if (rs != null) {
-        rs.close();
-      }
-      if (pstmt != null) {
-        pstmt.close();
-      }
-      if (conn != null) {
-        conn.close();
-      }
+      rs.close();
+      pstmt.close();
+      conn.close();
     }
-    catch (Exception ex) {
+    catch (Exception ignored) {
     }
-
     return idExists;
   }
 
-  public static int createNbn(NbnLocationsObject nbnLocationsObject, int registantId) {
-    int result = -1;
+  public static void createNbn(NbnLocationsObject nbnLocationsObject, int registantId) throws SQLException {
     String identifier = nbnLocationsObject.getIdentifier();
     String unfragmented = getUnfragmentedString(identifier);
 
     logger.info("Inserting in database: " + nbnLocationsObject.toString());
 
-    Connection conn = null;
+    Connection conn = PooledDataSource.getConnection();
+    conn.setAutoCommit(false);
+
+    for (String location : nbnLocationsObject.getLocations()) {
+      String insertNbnStoredProcedureQuery = "{call insertNbnObject(?, ?, ?, ?)}";
+      CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
+      callableStatement.setString(1, unfragmented);
+      callableStatement.setString(2, location);
+      callableStatement.setInt(3, registantId);
+      callableStatement.setBoolean(4, true);
+      callableStatement.executeUpdate();
+    }
 
     try {
-      conn = PooledDataSource.getConnection();
-      conn.setAutoCommit(false);
-
-      for (String location : nbnLocationsObject.getLocations()) {
-        String insertNbnStoredProcedureQuery = "{call insertNbnObject(?, ?, ?, ?)}";
-        CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
-        callableStatement.setString(1, unfragmented);
-        callableStatement.setString(2, location);
-        callableStatement.setInt(3, registantId);
-        callableStatement.setBoolean(4, true);
-        result = callableStatement.executeUpdate();
-      }
+      conn.close();
     }
-    catch (SQLException e) {
-      logger.error("Error inserting nbn object " + identifier + " in database.");
-      logger.debug(e.getMessage());
+    catch (Exception ignored) {
     }
-    finally {
-      try {
-        assert conn != null;
-        conn.close();
-      }
-      catch (Exception ex) {
-        ex.printStackTrace();
-      }
-    }
-    return result;
   }
 
-  public static int deleteNbn(String identifier) {
-    Connection conn = null;
-    int sqlResult = -1;
-    try {
-      conn = PooledDataSource.getConnection();
-      conn.setAutoCommit(false);
-      String deleteNbnStoredProcedureQuery = "{call deleteNbnObject(?)}";
-      CallableStatement callableStatement = conn.prepareCall(deleteNbnStoredProcedureQuery);
-      callableStatement.setString(1, identifier);
-      sqlResult = callableStatement.executeUpdate();
-    }
-    catch (SQLException e) {
-      logger.error("Error deleting nbn object " + identifier + " in database.");
-      logger.debug(e.getMessage());
-    }
-    finally {
-      try {
+  public static void deleteNbn(String identifier) throws SQLException {
 
-        if (conn != null) {
-          conn.close();
-        }
-      }
-      catch (Exception ex) {
-      }
+    Connection conn = PooledDataSource.getConnection();
+    conn.setAutoCommit(false);
+    String deleteNbnStoredProcedureQuery = "{call deleteNbnObject(?)}";
+    CallableStatement callableStatement = conn.prepareCall(deleteNbnStoredProcedureQuery);
+    callableStatement.setString(1, identifier);
+    callableStatement.executeUpdate();
+
+    try {
+      conn.close();
     }
-    return sqlResult;
+    catch (Exception ignored) {
+    }
   }
 
   public static int getRegistrantIdByOrgPrefix(String org_prefix) throws SQLException {
@@ -277,8 +241,7 @@ public class Dao {
           conn.close();
         }
       }
-      catch (Exception ex) {
-        //ignored
+      catch (Exception ignored) {
       }
     }
     return user;
@@ -315,8 +278,7 @@ public class Dao {
           conn.close();
         }
       }
-      catch (Exception ex) {
-        //ignored
+      catch (Exception ignored) {
       }
     }
     return user;
@@ -346,8 +308,7 @@ public class Dao {
           conn.close();
         }
       }
-      catch (SQLException e) {
-        e.printStackTrace();
+      catch (SQLException ignored) {
       }
     }
   }
