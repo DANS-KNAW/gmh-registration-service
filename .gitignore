@@ -1,5 +1,5 @@
 /target/
 /.idea/
 *.iml
-*.properties
+src/main/resources/application.properties
 .DS_Store

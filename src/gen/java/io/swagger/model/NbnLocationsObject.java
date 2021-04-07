@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2018 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /*
  * NBN:Resolver
  * For easy retrieval of a publication or data, assigned with a Dutch NBN in the Netherlands, a service called <a href ='https://persistent-identifier.nl'>National Resolver</a> is available. This service is managed by <a href ='https://dans.knaw.nl'>Data Archiving and Networked Services</a> (DANS) and <a href=\"https://www.kb.nl\">KB, National Library of the Netherlands</a> (KB). Find out more about the <a href=\"https://www.kb.nl/organisatie/onderzoek-expertise/informatie-infrastructuur-diensten-voor-bibliotheken/registration-agency-nbn\">'Registration Agency NBN'</a>.
@@ -12,19 +27,19 @@
 
 package io.swagger.model;
 
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import javax.validation.constraints.*;
+import javax.validation.Valid;
 
 /**
  * NbnLocationsObject
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-08T12:34:19.815Z[GMT]")
-public class NbnLocationsObject {
-
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-22T09:23:35.355Z[GMT]")public class NbnLocationsObject   {
   @JsonProperty("identifier")
   private String identifier = null;
 
@@ -38,7 +53,6 @@ public class NbnLocationsObject {
 
   /**
    * Get identifier
-   *
    * @return identifier
    **/
   @JsonProperty("identifier")
@@ -66,7 +80,6 @@ public class NbnLocationsObject {
 
   /**
    * Get locations
-   *
    * @return locations
    **/
   @JsonProperty("locations")
@@ -79,6 +92,7 @@ public class NbnLocationsObject {
     this.locations = locations;
   }
 
+
   @Override
   public boolean equals(java.lang.Object o) {
     if (this == o) {
@@ -88,13 +102,15 @@ public class NbnLocationsObject {
       return false;
     }
     NbnLocationsObject nbnLocationsObject = (NbnLocationsObject) o;
-    return Objects.equals(this.identifier, nbnLocationsObject.identifier) && Objects.equals(this.locations, nbnLocationsObject.locations);
+    return Objects.equals(this.identifier, nbnLocationsObject.identifier) &&
+        Objects.equals(this.locations, nbnLocationsObject.locations);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(identifier, locations);
   }
+
 
   @Override
   public String toString() {
