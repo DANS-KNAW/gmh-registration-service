@@ -47,7 +47,7 @@ public class NbnLocationApp {
   }
 
   public OperationResult doCreateNbnLocations(NbnLocationsObject body, SecurityContext securityContext) {
-
+    String identifier = body.getIdentifier();
     boolean nbnIsValid = NbnValidator.validate(body.getIdentifier());
     boolean locationsValid = LocationValidator.validateAllLocations(body.getLocations());
 
@@ -55,14 +55,14 @@ public class NbnLocationApp {
       int registrantId = Dao.getRegistrantIdByOrgPrefix(securityContext.getUserPrincipal().getName());
 
       if (!nbnIsValid || !locationsValid)
-        return new BadRequest(body.getIdentifier());
-      if (!NbnValidator.prefixMatches(body.getIdentifier(), securityContext.getUserPrincipal().getName()))
+        return new BadRequest(identifier);
+      if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()))
         return new Forbidden();
-      if (Dao.getIdentifier(body.getIdentifier()))
-        return new Conflict(body.getIdentifier());
+      if (Dao.getIdentifier(identifier))
+        return new Conflict(identifier);
       else {
         Dao.createNbn(body, registrantId);
-        return new Created(body.getIdentifier());
+        return new Created(identifier);
       }
     }
     catch (SQLException e) {
@@ -90,7 +90,11 @@ public class NbnLocationApp {
 
   public OperationResult doUpdateNbnRecord(List<String> body, String identifier, SecurityContext securityContext) {
     NbnLocationsObject nbnLocationsObject = getNbnLocationsObject(body, identifier);
+    boolean nbnIsValid = NbnValidator.validate(identifier);
+    boolean locationsValid = LocationValidator.validateAllLocations(body);
 
+    if (!nbnIsValid || !locationsValid)
+      return new BadRequest(identifier);
     if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()))
       return new Forbidden();
 

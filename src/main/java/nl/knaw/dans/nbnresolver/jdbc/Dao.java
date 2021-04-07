@@ -157,8 +157,7 @@ public class Dao {
           conn.close();
         }
       }
-      catch (Exception ex) {
-        //ignored
+      catch (Exception ignored) {
       }
     }
     return locations;
@@ -198,7 +197,7 @@ public class Dao {
           conn.close();
         }
       }
-      catch (Exception ex) {
+      catch (Exception ignored) {
       }
     }
     return nbns;
