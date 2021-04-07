@@ -165,17 +165,16 @@ START TRANSACTION;
 SET FOREIGN_KEY_CHECKS=0;
 
 DELETE I, IL, IR, L, LR
-FROM identifier_location IL
+from location L
+INNER JOIN location_registrant LR ON LR.location_id = L.location_id
+inner join identifier_location IL ON IL.location_id = L.location_id
 INNER JOIN identifier I ON i.identifier_id = IL.identifier_id
 INNER join identifier_registrant IR ON IR.identifier_id = I.identifier_id
-INNER JOIN location_registrant LR ON LR.registrant_id = IR.registrant_id
-INNER JOIN location L ON L.location_id = LR.location_id
 WHERE I.identifier_value = nbn_value ;
 
 SET FOREIGN_KEY_CHECKS=1;
 
 COMMIT;
-
 END$$
 
 DELIMITER ;
@@ -193,17 +192,21 @@ DECLARE identifier_id BIGINT(20);
 DECLARE location_id BIGINT(20);
 
 START TRANSACTION;
+SET identifier_id = (SELECT identifier.identifier_id from nbnresolver.identifier where identifier.identifier_value = nbn_value);
 
+IF (identifier_id IS NULL) THEN
 INSERT INTO identifier (identifier.identifier_value) VALUES (nbn_value);
 SET identifier_id = LAST_INSERT_ID();
+INSERT INTO identifier_registrant (identifier_registrant.identifier_id, identifier_registrant.registrant_id) VALUES (identifier_id, registrant_id );
+END IF;
+
 INSERT INTO location (location.location_url) VALUES (nbn_location);
 SET location_id = LAST_INSERT_ID();
-INSERT INTO identifier_registrant (identifier_registrant.identifier_id, identifier_registrant.registrant_id) VALUES (identifier_id, registrant_id );
+
 INSERT INTO identifier_location (identifier_location.location_id, identifier_location.identifier_id, identifier_location.last_modified, identifier_location.isFailover) VALUES (location_id , identifier_id , NOW() , failover);
 INSERT INTO location_registrant (location_registrant.location_id, location_registrant.registrant_id) VALUES (location_id, registrant_id );
 
 COMMIT;
-
 END$$
 
 DELIMITER ;
