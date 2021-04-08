@@ -18,30 +18,30 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>nl.knaw.dans.shared</groupId>
     <artifactId>gmh-registration-service</artifactId>
     <packaging>war</packaging>
     <name>gmh-registration-service</name>
     <version>1.0.0</version>
-
     <parent>
         <groupId>nl.knaw.dans.shared</groupId>
         <artifactId>dans-java-project</artifactId>
         <version>4.0.1</version>
     </parent>
-
     <description>
-        The gmh-registration-service is a REST-API interface managed by OpenAPI spec, blah
+        The gmh-registration-service is a REST-API interface managed by an OpenAPI specification.
+        This service allows for registered repositories to register and manage their NBN-pid with a given location of the digital object.
     </description>
-
     <licenses>
         <license>
-            <name>Unlicense</name>
+            <name>The Apache Software License, Version 2.0</name>
             <url>https://www.apache.org/licenses/LICENSE-2.0.html</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
-
+    <scm>
+        <developerConnection>scm:git:https://github.com/DANS-KNAW/${project.artifactId}</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
@@ -101,8 +101,7 @@
                             <goal>start</goal>
                         </goals>
                         <configuration>
-                            <scanIntervalSeconds>0</scanIntervalSeconds>
-                            <!--              <daemon>true</daemon>-->
+                            <scanIntervalSeconds>0</scanIntervalSeconds><!--              <daemon>true</daemon>-->
                         </configuration>
                     </execution>
                     <execution>
@@ -140,17 +139,11 @@
                     <includes>
                         <include>src/*/java/**/*.java</include>
                     </includes>
-<!--                    <excludes combine.children="append">-->
-<!--                        <exclude>*.tmp</exclude>-->
-<!--                    </excludes>-->
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
     <dependencies>
-
-        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
@@ -162,8 +155,6 @@
             <artifactId>commons-dbcp</artifactId>
             <version>1.4</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -252,7 +243,6 @@
             <artifactId>jjwt</artifactId>
             <version>0.9.1</version>
         </dependency>
-
         <!-- Bean Validation API support -->
         <dependency>
             <groupId>javax.validation</groupId>
@@ -261,7 +251,6 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
     <repositories>
         <repository>
             <id>sonatype-snapshots</id>
@@ -291,7 +280,6 @@
             <url>https://maven.dans.knaw.nl/snapshots/</url>
         </repository>
     </repositories>
-
     <properties>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
