@@ -66,16 +66,16 @@ public class Dao {
 
     Connection conn = PooledDataSource.getConnection();
     conn.setAutoCommit(false);
-
+    boolean isFailover = false;
     for (String location : nbnLocationsObject.getLocations()) {
       String insertNbnStoredProcedureQuery = "{call insertNbnObject(?, ?, ?, ?)}";
       CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
       callableStatement.setString(1, unfragmented);
       callableStatement.setString(2, location);
       callableStatement.setInt(3, registantId);
-      //TODO: set isFailover to false for first location
-      callableStatement.setBoolean(4, true);
+      callableStatement.setBoolean(4, isFailover);
       callableStatement.executeUpdate();
+      isFailover = true;
     }
 
     try {
