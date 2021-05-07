@@ -13,19 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.nbnresolver.response;
+package nl.knaw.dans.nbnresolver.jdbc;
 
-import javax.ws.rs.core.Response;
+public class InvalidTokenException extends Exception {
 
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-
-public class InternalServerError implements OperationResult {
-
-  @Override
-  public Response.Status getStatus() {
-    return INTERNAL_SERVER_ERROR;
+  public InvalidTokenException(String message) {
+    super(message);
   }
-
-  @Override
-  public Object getResponseBody() { return new ResponseMessage(INTERNAL_SERVER_ERROR.getStatusCode(), "Internal server error"); }
 }

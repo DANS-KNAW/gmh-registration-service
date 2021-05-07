@@ -15,9 +15,14 @@
  */
 package nl.knaw.dans.nbnresolver.authentication;
 
-import nl.knaw.dans.nbnresolver.jdbc.Dao;
-import nl.knaw.dans.nbnresolver.response.Unauthorized;
 import io.swagger.model.User;
+import nl.knaw.dans.nbnresolver.TokenApiServiceImpl;
+import nl.knaw.dans.nbnresolver.jdbc.Dao;
+import nl.knaw.dans.nbnresolver.jdbc.InvalidTokenException;
+import nl.knaw.dans.nbnresolver.response.InternalServerError;
+import nl.knaw.dans.nbnresolver.response.Unauthorized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -28,6 +33,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.security.Principal;
+import java.sql.SQLException;
 
 @Secured
 @Provider
@@ -35,6 +41,7 @@ import java.security.Principal;
 public class AuthenticationFilter implements ContainerRequestFilter {
 
   private static final String AUTHENTICATION_SCHEME = "Bearer";
+  private static final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
 
   @Override
   public void filter(ContainerRequestContext requestContext) {
@@ -87,6 +94,12 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     requestContext.abortWith(Response.status(unauthorized.getStatus()).entity(unauthorized.getResponseBody()).build());
   }
 
+  private void abortWithInternalServerError(ContainerRequestContext requestContext, Exception e) {
+    logger.error("Database error: " + e.getMessage());
+    InternalServerError internalServerError = new InternalServerError();
+    requestContext.abortWith(Response.status(internalServerError.getStatus()).entity(internalServerError.getResponseBody()).build());
+  }
+
   // Validates by getting the current User by the token from the request.
   // If the db returns no result it means the token is not in the db and therefore not valid.
   private User validateToken(String token, ContainerRequestContext requestContext) {
@@ -96,8 +109,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     try {
       currentUser = Dao.getUserByToken(token);
     }
-    catch (Exception e) {
+    catch (InvalidTokenException e) {
       abortWithUnauthorized(requestContext);
+    }
+    catch (SQLException ex) {
+      abortWithInternalServerError(requestContext, ex);
     }
     return currentUser;
   }
