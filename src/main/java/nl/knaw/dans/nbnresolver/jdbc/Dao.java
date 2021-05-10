@@ -66,15 +66,16 @@ public class Dao {
 
     Connection conn = PooledDataSource.getConnection();
     conn.setAutoCommit(false);
-
+    boolean isFailover = false;
     for (String location : nbnLocationsObject.getLocations()) {
       String insertNbnStoredProcedureQuery = "{call insertNbnObject(?, ?, ?, ?)}";
       CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
       callableStatement.setString(1, unfragmented);
       callableStatement.setString(2, location);
       callableStatement.setInt(3, registantId);
-      callableStatement.setBoolean(4, true);
+      callableStatement.setBoolean(4, isFailover);
       callableStatement.executeUpdate();
+      isFailover = true;
     }
 
     try {
@@ -203,7 +204,7 @@ public class Dao {
     return nbns;
   }
 
-  public static User getUserByCredentials(String username, String password) throws Exception {
+  public static User getUserByCredentials(String username, String password) throws InvalidCredentialsException, SQLException {
     User user = null;
     ResultSet rs = null;
     Connection conn = null;
@@ -223,11 +224,7 @@ public class Dao {
         user.setOrgPrefix(rs.getString(1));
       }
     }
-
-    catch (SQLException e) {
-      logger.error("A Database error occurred. User could not be retrieved from database with credentials");
-      logger.debug(e.getMessage());
-    }
+    
     finally {
       try {
         if (rs != null) {
@@ -246,7 +243,7 @@ public class Dao {
     return user;
   }
 
-  public static User getUserByToken(String token) throws Exception {
+  public static User getUserByToken(String token) throws InvalidTokenException, SQLException {
     User user;
     ResultSet rs = null;
     Connection conn = null;
@@ -258,7 +255,7 @@ public class Dao {
       pstmt.setString(1, token);
       rs = pstmt.executeQuery();
       if (!rs.next()) {
-        throw new Exception("Invalid Token");
+        throw new InvalidTokenException("Invalid Token");
       }
       else {
         user = new User();
@@ -283,7 +280,7 @@ public class Dao {
     return user;
   }
 
-  public static void registerToken(String token, String username, String password) throws Exception {
+  public static void registerToken(String token, String username, String password) throws SQLException {
     Connection conn = null;
     PreparedStatement pstmt = null;
 
@@ -295,7 +292,7 @@ public class Dao {
       pstmt.setString(3, password);
       int resultCode = pstmt.executeUpdate();
       if (resultCode != 1) {
-        throw new Exception("Token could not be persisted");
+        throw new SQLException("Token could not be persisted");
       }
     }
     finally {

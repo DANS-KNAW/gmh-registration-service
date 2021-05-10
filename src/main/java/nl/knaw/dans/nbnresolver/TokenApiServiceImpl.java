@@ -18,22 +18,28 @@ package nl.knaw.dans.nbnresolver;
 import io.swagger.api.ApiResponseMessage;
 import io.swagger.api.NotFoundException;
 import io.swagger.api.TokenApiService;
+import nl.knaw.dans.nbnresolver.authentication.AuthenticationFilter;
 import nl.knaw.dans.nbnresolver.jdbc.Dao;
 import io.swagger.model.Credentials;
 import io.swagger.model.User;
+import nl.knaw.dans.nbnresolver.jdbc.InvalidCredentialsException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.security.SecureRandom;
+import java.sql.SQLException;
 import java.util.Base64;
 
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-02-03T12:44:06.016Z[GMT]")
 public class TokenApiServiceImpl extends TokenApiService {
 
-
   User user;
+  private static final Logger logger = LoggerFactory.getLogger(TokenApiServiceImpl.class);
   private static final SecureRandom secureRandom = new SecureRandom();
   private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder();
 
@@ -56,12 +62,17 @@ public class TokenApiServiceImpl extends TokenApiService {
       return Response.ok(token).build();
 
     }
-    catch (Exception e) {
-      return Response.status(FORBIDDEN).entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Authentication failed: invalid credentials")).build();
+    catch (InvalidCredentialsException e) {
+      return Response.status(FORBIDDEN).entity("Authentication failed: invalid credentials").build();
+    }
+    catch (SQLException ex) {
+      logger.error("Database error: " + ex.getMessage());
+      logger.debug(ex.getMessage());
+      return Response.status(INTERNAL_SERVER_ERROR).entity("Internal server error").build();
     }
   }
 
-  private void authenticate(String username, String password) throws Exception {
+  private void authenticate(String username, String password) throws InvalidCredentialsException, SQLException {
     // Throw an Exception if the credentials are invalid
     user = Dao.getUserByCredentials(username, password);
   }
