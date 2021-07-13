@@ -194,9 +194,10 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
 
 servers:
-  - url: http://localhost:8009/nbn
+  - url: /nbn
+    description: (test)
   - url: https://nbnresolver.nl/nbn/api/v1
-    description: (prod)
+    description: (production)
 
 tags:
   - description: The URN:NBN persistent identifier.
