@@ -221,9 +221,9 @@ SET FOREIGN_KEY_CHECKS=0;
 DELETE I, IL, IR, L, LR
 from location L
 INNER JOIN location_registrant LR ON LR.location_id = L.location_id
-inner join identifier_location IL ON IL.location_id = L.location_id
-INNER JOIN identifier I ON i.identifier_id = IL.identifier_id
-INNER join identifier_registrant IR ON IR.identifier_id = I.identifier_id
+INNER JOIN identifier_location IL ON IL.location_id = L.location_id
+INNER JOIN identifier I ON I.identifier_id = IL.identifier_id
+INNER JOIN identifier_registrant IR ON IR.identifier_id = I.identifier_id
 WHERE I.identifier_value = nbn_value ;
 
 SET FOREIGN_KEY_CHECKS=1;
