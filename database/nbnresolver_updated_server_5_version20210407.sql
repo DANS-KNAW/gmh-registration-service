@@ -211,7 +211,7 @@ USE `nbnresolver` ;
 
 DELIMITER $$
 USE `nbnresolver`$$
-CREATE DEFINER=`nbnresolver_reg`@`localhost` PROCEDURE `deleteNbnObject`(IN nbn_value VARCHAR(150))
+CREATE DEFINER=`nbnresolver_api`@`localhost` PROCEDURE `deleteNbnObject`(IN nbn_value VARCHAR(150))
 BEGIN
 
 START TRANSACTION;
@@ -239,7 +239,7 @@ DELIMITER ;
 
 DELIMITER $$
 USE `nbnresolver`$$
-CREATE DEFINER=`nbnresolver_reg`@`localhost` PROCEDURE `insertNbnObject`(IN nbn_value VARCHAR(150),IN nbn_location VARCHAR(150), IN registrant_id INT(11), IN failover BOOLEAN)
+CREATE DEFINER=`nbnresolver_api`@`localhost` PROCEDURE `insertNbnObject`(IN nbn_value VARCHAR(150),IN nbn_location VARCHAR(150), IN registrant_id INT(11), IN failover BOOLEAN)
 BEGIN
 
 DECLARE identifier_id BIGINT(20);
