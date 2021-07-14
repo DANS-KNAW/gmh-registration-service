@@ -78,6 +78,12 @@
                         <port>8009</port>
                         <idleTimeout>60000</idleTimeout>
                     </httpConnector>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>logback.configurationFile</name>
+                            <value>src/test/resources/logback-test.xml</value>
+                        </systemProperty>
+                    </systemProperties>
                     <requestLog implementation="org.eclipse.jetty.server.NCSARequestLog">
                         <filename>jettyrequest.log</filename>
                         <retainDays>0</retainDays>
