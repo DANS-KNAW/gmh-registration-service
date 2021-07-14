@@ -38,7 +38,7 @@ paths:
   /nbn:
     post:
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       summary: 'Registers a new URN:NBN identifier with associated locations.'
       description: 'Registers a new URN:NBN associated with a prioritized list of locations. Multiple locations are prioritized in respective order. The first location is the preferred. The second is failover, etc. <br>The identifier must have a prefix that matches the authenticated user.'
       operationId: 'createNbnLocations'
@@ -68,7 +68,7 @@ paths:
       - $ref: '#/components/parameters/nbn_identifier'
     get:
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       summary: 'Returns URN:NBN object (urn:nbn+locations) for this {identifier}.'
       description: 'Returns URN:NBN object (urn:nbn+locations) for this {identifier}.<br>The identifier must have a prefix that matches the authenticated user. HTTP 404 otherwise.'
       operationId: 'getNbnRecord'
@@ -92,7 +92,7 @@ paths:
 
     put:
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       summary: 'Updates an existing URN:NBN {identifier} or registers a new URN:NBN {identifier} associated with a prioritized list of locations.'
       description: 'Updates or registers a (new) URN:NBN associated with a prioritized list of locations. Multiple locations are prioritized in respective order. The first location is the preferred. The second is failover, etc. <br>Identifiers must have a prefix that matches the authenticated user. In case of an update the existing locations will be replaced by the locations provided in this request.'
       operationId: 'updateNbnRecord'
@@ -124,7 +124,7 @@ paths:
       - $ref: '#/components/parameters/nbn_identifier'
     get:
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       summary: 'Returns registered locations for this URN:NBN {identifier}.'
       description: 'Returns all registered locations for this {identifier}.<br>The identifier must have a prefix that matches the authenticated user. HTTP 404 otherwise.'
       operationId: 'getLocationsByNbn'
@@ -146,13 +146,12 @@ paths:
       tags:
         - URN:NBN identifier
 
-
   /location/{location}:
     parameters:
       - $ref: '#/components/parameters/uri_location'
     get:
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       operationId: getNbnByLocation
       summary: Returns URN:NBN identifier(s) registered for this location.
       description: Returns URN:NBN identifier(s) associated with this location, if at least one of them is registered to the authenticated user.
@@ -172,11 +171,10 @@ paths:
       tags:
         - Location
 
-
   /token:
     post:
       security:
-        - UserLogin: []
+        - UserLogin: [ ]
       summary: 'Returns an api token'
       description: 'Authenticates a user and generates an api token to be used for requests to the other endpoints.'
       operationId: 'token'
@@ -204,7 +202,6 @@ tags:
     name: URN:NBN identifier
   - description: The URI to which the URN:NBN identifier should resolve.
     name: Location
-
 
 components:
   responses:
@@ -264,7 +261,6 @@ components:
         password:
           type: string
           example: "password"
-
 
   securitySchemes:
     UserLogin:
