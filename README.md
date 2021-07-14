@@ -14,7 +14,6 @@ mvn clean package jetty:run
 You can then view the swagger listing here:
 
 ```
-Swagger / OpenAPI v2: http://localhost:8009/nbn/swagger.json
 Swagger / OpenAPI v3: http://localhost:8009/nbn/openapi.json
 ```
 
