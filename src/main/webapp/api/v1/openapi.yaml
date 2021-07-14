@@ -173,8 +173,8 @@ paths:
 
   /token:
     post:
-      security:
-        - UserLogin: [ ]
+      # security:
+      #   - UserLogin: [ ]
       summary: 'Returns an api token'
       description: 'Authenticates a user and generates an api token to be used for requests to the other endpoints.'
       operationId: 'token'
@@ -263,9 +263,9 @@ components:
           example: "password"
 
   securitySchemes:
-    UserLogin:
-      scheme: basic
-      type: http
+    # UserLogin:
+    #   scheme: basic
+    #   type: http
 
     BearerAuth:
       type: http
