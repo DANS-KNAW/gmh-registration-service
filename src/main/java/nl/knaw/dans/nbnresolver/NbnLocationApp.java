@@ -127,10 +127,16 @@ public class NbnLocationApp {
     }
   }
 
-  public OperationResult doGetNbnByLocation(String location) {
+  public OperationResult doGetNbnByLocation(String location, SecurityContext securityContext) {
     List<String> nbn = Dao.getNbnByLocation(location);
-
-    if (nbn.size() > 0) {
+    boolean isMatch = false;
+    for (String identifier: nbn) {
+      if (NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())){
+        isMatch = true;
+        break;
+      }
+    }
+    if (nbn.size() > 0 && isMatch) {
       return new Ok(nbn);
     }
     else {

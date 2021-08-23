@@ -28,7 +28,7 @@ public class LocationApiServiceImpl extends LocationApiService {
 
   @Override
   public Response getNbnByLocation(String location, SecurityContext securityContext) {
-    OperationResult result = app.doGetNbnByLocation(location);
+    OperationResult result = app.doGetNbnByLocation(location, securityContext);
     return Response.status(result.getStatus()).entity(result.getResponseBody()).build();
   }
 }

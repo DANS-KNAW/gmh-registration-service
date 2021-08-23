@@ -196,14 +196,14 @@ public class NbnLocationAppTest {
 
   @Test
   public void testDoGetNbnByLocation() {
-    OperationResult result = app.doGetNbnByLocation(TEST_LOCATIONS.get(0));
+    OperationResult result = app.doGetNbnByLocation(TEST_LOCATIONS.get(0), securityContextMock);
     assertTrue(result instanceof Ok);
     assertEquals(result.getStatus().getStatusCode(), 200);
   }
 
   @Test
   public void testDoGetNbnByLocationWithNonExistingLocation() {
-    OperationResult result = app.doGetNbnByLocation(NON_EXISTING_LOCATION);
+    OperationResult result = app.doGetNbnByLocation(NON_EXISTING_LOCATION, securityContextMock);
     assertTrue(result instanceof NotFound);
     assertEquals(result.getStatus().getStatusCode(), 404);
   }
