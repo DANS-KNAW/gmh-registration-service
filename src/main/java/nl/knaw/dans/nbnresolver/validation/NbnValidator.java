@@ -35,31 +35,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NbnValidator {
-
-  private static final String NBN_PATTERN = "^[uU][rR][nN]:[nN][bB][nN]:[nN][lL](:([a-zA-Z]{2}))?:\\d{2}-.+";
-  private static final String ORG_PREFIX_PATTERN = "([a-zA-Z]{2}):\\d{2}";
+  private static Pattern nbn_pattern = Pattern.compile("^[uU][rR][nN]:[nN][bB][nN]:[nN][lL]:([a-zA-Z]{2}:\\d{2}|[kK][bB])-.+");
 
   public NbnValidator() {
   }
 
   public static boolean validate(String nbn) {
-    Pattern pattern = Pattern.compile(NBN_PATTERN);
-    Matcher matcher = pattern.matcher(nbn);
+    Matcher matcher = nbn_pattern.matcher(nbn);
     return matcher.matches();
   }
 
   public static boolean prefixMatches(String nbn, String orgPrefix) {
-    boolean matches = false;
-    Pattern pattern = Pattern.compile(ORG_PREFIX_PATTERN);
-    Matcher matcher = pattern.matcher(nbn);
-    if (matcher.find()) {
-      if (matcher.group().equalsIgnoreCase(orgPrefix)) {
-        matches = true;
-      }
+    if (!nbn.isEmpty() && !orgPrefix.isEmpty() && nbn.trim().toLowerCase().startsWith(orgPrefix.trim().toLowerCase())){
+      return true;
     }
-    else {
-      matches = false;
-    }
-    return matches;
+    return false;
   }
 }
