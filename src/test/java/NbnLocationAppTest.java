@@ -60,7 +60,7 @@ public class NbnLocationAppTest {
   private final String INVALID_URN_NBN = "urn:nbn:nl:ui-example";
   private final String EXISTING_URN_NBN = "urn:nbn:nl:ui:17-existing";
   private final String NON_EXISTING_URN_NBN = "urn:nbn:nl:ui:17-non-existing";
-  private final String URN_NBN_INVALID_PREFIX = "urn:nbn:nl:ui:11-example";
+  private final String URN_NBN_INVALID_PREFIX = "urn:nbn:nl:gh:11-example";
   private final List<String> TEST_LOCATIONS = Arrays.asList("http://test_location1.nl", "http://test_location2.nl");
   private final String NON_EXISTING_LOCATION = "http://test_location_non_existing.nl";
 
@@ -77,12 +77,15 @@ public class NbnLocationAppTest {
     securityContextMock = mock(SecurityContext.class);
     principalMock = mock(Principal.class);
     when(securityContextMock.getUserPrincipal()).thenReturn(principalMock);
-    when(principalMock.getName()).thenReturn("ui:17");
-    when(Dao.getLocations(VALID_URN_NBN)).thenReturn(TEST_LOCATIONS);
+    when(securityContextMock.isUserInRole("LTP")).thenReturn(false);
+    when(principalMock.getName()).thenReturn("urn:nbn:nl:ui:17");
+    when(Dao.getLocations(VALID_URN_NBN, true)).thenReturn(TEST_LOCATIONS);
+    when(Dao.getLocations(VALID_URN_NBN, false)).thenReturn(TEST_LOCATIONS);
     when(Dao.getRegistrantIdByOrgPrefix(any())).thenReturn(1);
-    when(Dao.getIdentifier(EXISTING_URN_NBN)).thenReturn(true);
-    when(Dao.getIdentifier(VALID_URN_NBN)).thenReturn(false);
-    when(Dao.getLocations(NON_EXISTING_URN_NBN)).thenReturn(emptyList());
+    when(Dao.isExistingIdentifier(EXISTING_URN_NBN)).thenReturn(true);
+    when(Dao.isRegistrantIdentifier(VALID_URN_NBN, 1)).thenReturn(false);
+    when(Dao.isRegistrantIdentifier(EXISTING_URN_NBN, 1)).thenReturn(true);
+    when(Dao.getLocations(NON_EXISTING_URN_NBN, true)).thenReturn(emptyList());
     when(Dao.getNbnByLocation(TEST_LOCATIONS.get(0))).thenReturn(singletonList(VALID_URN_NBN));
     when(Dao.getNbnByLocation(NON_EXISTING_LOCATION)).thenReturn(emptyList());
   }
@@ -91,6 +94,7 @@ public class NbnLocationAppTest {
   public void testdoCreateNbnLocations() {
     nbnLocationsObject.setIdentifier(VALID_URN_NBN);
     OperationResult result = app.doCreateNbnLocations(nbnLocationsObject, securityContextMock);
+    System.out.println(result.getStatus());
     assertTrue(result instanceof Created);
     assertEquals(result.getStatus().getStatusCode(), 201);
   }
@@ -115,6 +119,7 @@ public class NbnLocationAppTest {
   public void testdoCreateNbnLocationsWithExistingNbn() {
     nbnLocationsObject.setIdentifier(EXISTING_URN_NBN);
     OperationResult result = app.doCreateNbnLocations(nbnLocationsObject, securityContextMock);
+    System.out.println(result.getStatus());
     assertTrue(result instanceof Conflict);
     assertEquals(result.getStatus().getStatusCode(), 409);
   }
@@ -124,8 +129,7 @@ public class NbnLocationAppTest {
     Map<String, Object> nbnRecordInput = new HashMap<>();
     nbnRecordInput.put("identifier", VALID_URN_NBN);
     nbnRecordInput.put("locations", TEST_LOCATIONS);
-
-    OperationResult result = app.doGetNbnRecord(VALID_URN_NBN);
+    OperationResult result = app.doGetNbnRecord(VALID_URN_NBN, securityContextMock);
     assertTrue(result instanceof Ok);
     assertEquals(result.getStatus().getStatusCode(), 200);
     assertEquals(result.getResponseBody(), nbnRecordInput);
@@ -133,14 +137,14 @@ public class NbnLocationAppTest {
 
   @Test
   public void testDoGetNbnRecordNonExistingNbn() {
-    OperationResult result = app.doGetNbnRecord(NON_EXISTING_URN_NBN);
+    OperationResult result = app.doGetNbnRecord(NON_EXISTING_URN_NBN, securityContextMock);
     assertTrue(result instanceof NotFound);
     assertEquals(result.getStatus().getStatusCode(), 404);
   }
 
   @Test
   public void testDoGetNbnRecordInvalidNbn() {
-    OperationResult result = app.doGetNbnRecord(INVALID_URN_NBN);
+    OperationResult result = app.doGetNbnRecord(INVALID_URN_NBN, securityContextMock);
     assertTrue(result instanceof BadRequest);
     assertEquals(result.getStatus().getStatusCode(), 400);
   }
@@ -175,21 +179,22 @@ public class NbnLocationAppTest {
 
   @Test
   public void testdoGetLocationsByNbn() {
-    OperationResult result = app.doGetLocationsByNbn(VALID_URN_NBN);
+    OperationResult result = app.doGetLocationsByNbn(VALID_URN_NBN, securityContextMock);
+//    System.out.println(result.getStatus());
     assertTrue(result instanceof Ok);
     assertEquals(result.getStatus().getStatusCode(), 200);
   }
 
   @Test
   public void testdoGetLocationsByNbnInvalidNbn() {
-    OperationResult result = app.doGetLocationsByNbn(INVALID_URN_NBN);
+    OperationResult result = app.doGetLocationsByNbn(INVALID_URN_NBN, securityContextMock);
     assertTrue(result instanceof BadRequest);
     assertEquals(result.getStatus().getStatusCode(), 400);
   }
 
   @Test
   public void testdoGetLocationsByNbnNonExistingNbn() {
-    OperationResult result = app.doGetLocationsByNbn(NON_EXISTING_URN_NBN);
+    OperationResult result = app.doGetLocationsByNbn(NON_EXISTING_URN_NBN, securityContextMock);
     assertTrue(result instanceof NotFound);
     assertEquals(result.getStatus().getStatusCode(), 404);
   }
