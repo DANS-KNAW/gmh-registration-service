@@ -18,8 +18,17 @@ package io.swagger.model;
 public class User {
 
   private String orgPrefix;
+  private boolean isLTP;
 
   public User() {
+  }
+
+  public boolean isLTP() {
+    return isLTP;
+  }
+
+  public void setLTP(boolean LTP) {
+    isLTP = LTP;
   }
 
   public String getOrgPrefix() {

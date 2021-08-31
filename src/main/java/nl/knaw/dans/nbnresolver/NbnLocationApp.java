@@ -56,12 +56,12 @@ public class NbnLocationApp {
 
       if (!nbnIsValid || !locationsValid)
         return new BadRequest(identifier);
-      if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()))
+      if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !securityContext.isUserInRole("LTP"))
         return new Forbidden();
-      if (Dao.getIdentifier(identifier))
+      if (Dao.isRegistrantIdentifier(identifier, registrantId))
         return new Conflict(identifier);
       else {
-        Dao.createNbn(body, registrantId);
+        Dao.createNbn(body, registrantId, securityContext.isUserInRole("LTP"));
         return new Created(identifier);
       }
     }
@@ -71,13 +71,16 @@ public class NbnLocationApp {
     }
   }
 
-  public OperationResult doGetNbnRecord(String identifier) {
+  public OperationResult doGetNbnRecord(String identifier, SecurityContext securityContext) {
     Map<String, Object> nbnRecord = new HashMap<>();
 
     if (!NbnValidator.validate(identifier))
       return new BadRequest(identifier);
 
-    List<String> locations = Dao.getLocations(identifier);
+    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !securityContext.isUserInRole("LTP")) //TODO: Undocumented feature: LTP is able to update ALL nbn's.
+      return new Forbidden();
+
+    List<String> locations = Dao.getLocations(identifier, securityContext.isUserInRole("LTP"));
     if (locations.isEmpty()) {
       return new NotFound(identifier);
     }
@@ -95,18 +98,18 @@ public class NbnLocationApp {
 
     if (!nbnIsValid || !locationsValid)
       return new BadRequest(identifier);
-    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()))
+    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !securityContext.isUserInRole("LTP")) //TODO: Undocumented feature: LTP is able to update ALL nbn's.
       return new Forbidden();
 
     try {
       int registrantId = Dao.getRegistrantIdByOrgPrefix(securityContext.getUserPrincipal().getName());
-      if (Dao.getIdentifier(identifier)) {
-        Dao.deleteNbn(identifier);
-        Dao.createNbn(nbnLocationsObject, registrantId);
+      if (Dao.isExistingIdentifier(identifier)) { //Check if nbn exists (update), or not (create new one).
+        Dao.deleteRegistrantNbnLocations(identifier, securityContext.isUserInRole("LTP"));
+        Dao.createNbn(nbnLocationsObject, registrantId, securityContext.isUserInRole("LTP"));
         return new Ok(new ResponseMessage(OK.getStatusCode(), "OK (updated existing)"));
       }
-      else {
-        Dao.createNbn(nbnLocationsObject, registrantId);
+      else { //NBN does not exist (create new one).
+        Dao.createNbn(nbnLocationsObject, registrantId, securityContext.isUserInRole("LTP"));
         return new Created(identifier);
       }
     }
@@ -116,10 +119,12 @@ public class NbnLocationApp {
     }
   }
 
-  public OperationResult doGetLocationsByNbn(String identifier) {
+  public OperationResult doGetLocationsByNbn(String identifier, SecurityContext securityContext) {
     if (!NbnValidator.validate(identifier))
       return new BadRequest(identifier);
-    List<String> locations = Dao.getLocations(identifier);
+    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !securityContext.isUserInRole("LTP"))
+      return new Forbidden(); //TODO: New undocumented response.
+    List<String> locations = Dao.getLocations(identifier, securityContext.isUserInRole("LTP"));
     if (locations.isEmpty())
       return new NotFound(identifier);
     else {
@@ -128,12 +133,18 @@ public class NbnLocationApp {
   }
 
   public OperationResult doGetNbnByLocation(String location, SecurityContext securityContext) {
+
+//TODO: Do we need to check locationValidator for BAD REQUEST?
     List<String> nbn = Dao.getNbnByLocation(location);
     boolean isMatch = false;
-    for (String identifier: nbn) {
-      if (NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())){
-        isMatch = true;
-        break;
+    if(securityContext.isUserInRole("LTP")){ // No restrictions for LTP.
+      isMatch = true;
+    } else {
+      for (String identifier : nbn) {
+        if (NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())) {
+          isMatch = true;
+          break;
+        }
       }
     }
     if (nbn.size() > 0 && isMatch) {

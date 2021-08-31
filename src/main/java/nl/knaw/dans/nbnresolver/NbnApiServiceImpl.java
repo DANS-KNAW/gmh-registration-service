@@ -36,7 +36,7 @@ public class NbnApiServiceImpl extends NbnApiService {
 
   @Override
   public Response getNbnRecord(String identifier, SecurityContext securityContext) {
-    OperationResult result = app.doGetNbnRecord(identifier);
+    OperationResult result = app.doGetNbnRecord(identifier, securityContext);
     return Response.status(result.getStatus()).entity(result.getResponseBody()).build();
   }
 
@@ -48,7 +48,7 @@ public class NbnApiServiceImpl extends NbnApiService {
 
   @Override
   public Response getLocationsByNbn(String identifier, SecurityContext securityContext) {
-    OperationResult result = app.doGetLocationsByNbn(identifier);
+    OperationResult result = app.doGetLocationsByNbn(identifier, securityContext);
     return Response.status(result.getStatus()).entity(result.getResponseBody()).build();
   }
 

@@ -16,7 +16,6 @@
 package nl.knaw.dans.nbnresolver.authentication;
 
 import io.swagger.model.User;
-import nl.knaw.dans.nbnresolver.TokenApiServiceImpl;
 import nl.knaw.dans.nbnresolver.jdbc.Dao;
 import nl.knaw.dans.nbnresolver.jdbc.InvalidTokenException;
 import nl.knaw.dans.nbnresolver.response.InternalServerError;
@@ -34,6 +33,8 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.security.Principal;
 import java.sql.SQLException;
+
+//See: https://cassiomolin.com/2014/11/06/token-based-authentication-with-jaxrs-20/
 
 @Secured
 @Provider
@@ -61,6 +62,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     // Validate the token
     User currentUser = validateToken(token, requestContext);
 
+    final SecurityContext currentSecurityContext = requestContext.getSecurityContext();
+
     requestContext.setSecurityContext(new SecurityContext() {
 
       @Override
@@ -69,13 +72,13 @@ public class AuthenticationFilter implements ContainerRequestFilter {
       }
 
       @Override
-      public boolean isUserInRole(String s) {
-        return false;
+      public boolean isUserInRole(String role) {
+        return role.equalsIgnoreCase("ltp") && currentUser.isLTP();
       }
 
       @Override
       public boolean isSecure() {
-        return false;
+        return currentSecurityContext.isSecure();
       }
 
       @Override

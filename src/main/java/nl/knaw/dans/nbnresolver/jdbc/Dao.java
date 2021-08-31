@@ -35,7 +35,31 @@ public class Dao {
   public Dao() {
   }
 
-  public static boolean getIdentifier(String identifier) throws SQLException {
+  public static boolean isRegistrantIdentifier(String identifier, int registantId) throws SQLException {
+    boolean idExists = false;
+    String unfragmented = getUnfragmentedString(identifier);
+
+    Connection conn = PooledDataSource.getConnection();
+    PreparedStatement pstmt = conn.prepareStatement("SELECT I.identifier_id FROM identifier I INNER JOIN identifier_registrant IR ON I.identifier_id=IR.identifier_id WHERE I.identifier_value = ? AND IR.registrant_id = ?;");
+    pstmt.setString(1, unfragmented);
+    pstmt.setInt(2, registantId);
+    ResultSet rs = pstmt.executeQuery();
+
+    if (rs.next()) {
+      idExists = true;
+    }
+
+    try {
+      rs.close();
+      pstmt.close();
+      conn.close();
+    }
+    catch (Exception ignored) {
+    }
+    return idExists;
+  }
+
+  public static boolean isExistingIdentifier(String identifier) throws SQLException {
     boolean idExists = false;
     String unfragmented = getUnfragmentedString(identifier);
 
@@ -58,7 +82,7 @@ public class Dao {
     return idExists;
   }
 
-  public static void createNbn(NbnLocationsObject nbnLocationsObject, int registantId) throws SQLException {
+  public static void createNbn(NbnLocationsObject nbnLocationsObject, int registantId, boolean isFailover) throws SQLException {
     String identifier = nbnLocationsObject.getIdentifier();
     String unfragmented = getUnfragmentedString(identifier);
 
@@ -66,16 +90,15 @@ public class Dao {
 
     Connection conn = PooledDataSource.getConnection();
     conn.setAutoCommit(false);
-    boolean isFailover = false;
+
     for (String location : nbnLocationsObject.getLocations()) {
-      String insertNbnStoredProcedureQuery = "{call insertNbnObject(?, ?, ?, ?)}";
+      String insertNbnStoredProcedureQuery = "{call insertNbnLocation(?, ?, ?, ?)}";
       CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
       callableStatement.setString(1, unfragmented);
       callableStatement.setString(2, location);
       callableStatement.setInt(3, registantId);
       callableStatement.setBoolean(4, isFailover);
       callableStatement.executeUpdate();
-      isFailover = true;
     }
 
     try {
@@ -85,13 +108,14 @@ public class Dao {
     }
   }
 
-  public static void deleteNbn(String identifier) throws SQLException {
+  public static void deleteRegistrantNbnLocations(String identifier, boolean isLTP) throws SQLException {
 
     Connection conn = PooledDataSource.getConnection();
     conn.setAutoCommit(false);
-    String deleteNbnStoredProcedureQuery = "{call deleteNbnObject(?)}";
+    String deleteNbnStoredProcedureQuery = "{call deleteNbnLocations(?, ?)}";
     CallableStatement callableStatement = conn.prepareCall(deleteNbnStoredProcedureQuery);
     callableStatement.setString(1, identifier);
+    callableStatement.setBoolean(2, isLTP);
     callableStatement.executeUpdate();
 
     try {
@@ -123,7 +147,7 @@ public class Dao {
     return registrantId;
   }
 
-  public static List<String> getLocations(String identifier) {
+  public static List<String> getLocations(String identifier, boolean includeLTP) {
     List<String> locations = new ArrayList<>();
 
     String unfragmented = getUnfragmentedString(identifier);
@@ -134,7 +158,11 @@ public class Dao {
 
     try {
       conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT L.location_url, IL.isFailover FROM identifier I JOIN identifier_location IL ON I.identifier_id = IL.identifier_id JOIN location L ON L.location_id = IL.location_id WHERE I.identifier_value=? ORDER BY IL.isFailover, IL.last_modified DESC");
+      if (includeLTP) {
+        pstmt = conn.prepareStatement("SELECT L.location_url, IL.isFailover FROM identifier I JOIN identifier_location IL ON I.identifier_id = IL.identifier_id JOIN location L ON L.location_id = IL.location_id WHERE I.identifier_value=? ORDER BY IL.isFailover, IL.last_modified DESC");
+      } else {
+        pstmt = conn.prepareStatement("SELECT L.location_url, IL.isFailover FROM identifier I JOIN identifier_location IL ON I.identifier_id = IL.identifier_id JOIN location L ON L.location_id = IL.location_id WHERE I.identifier_value=? AND IL.isFailover=0 ORDER BY IL.isFailover, IL.last_modified DESC");
+      }
       pstmt.setString(1, unfragmented);
       rs = pstmt.executeQuery();
 
@@ -251,7 +279,8 @@ public class Dao {
 
     try {
       conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT C.org_prefix FROM nbnresolver.credentials C WHERE C.token = ?;");
+//      pstmt = conn.prepareStatement("SELECT C.org_prefix, C.org_prefix FROM nbnresolver.credentials C WHERE C.token = ?;");
+      pstmt = conn.prepareStatement("SELECT C.org_prefix, R.isLTP FROM credentials C inner join registrant R ON C.registrant_id = R.registrant_id WHERE C.token = ?;");
       pstmt.setString(1, token);
       rs = pstmt.executeQuery();
       if (!rs.next()) {
@@ -260,6 +289,7 @@ public class Dao {
       else {
         user = new User();
         user.setOrgPrefix(rs.getString(1));
+        user.setLTP(rs.getBoolean(2));
       }
     }
     finally {
