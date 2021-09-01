@@ -94,7 +94,6 @@ public class NbnLocationAppTest {
   public void testdoCreateNbnLocations() {
     nbnLocationsObject.setIdentifier(VALID_URN_NBN);
     OperationResult result = app.doCreateNbnLocations(nbnLocationsObject, securityContextMock);
-    System.out.println(result.getStatus());
     assertTrue(result instanceof Created);
     assertEquals(result.getStatus().getStatusCode(), 201);
   }
@@ -119,7 +118,6 @@ public class NbnLocationAppTest {
   public void testdoCreateNbnLocationsWithExistingNbn() {
     nbnLocationsObject.setIdentifier(EXISTING_URN_NBN);
     OperationResult result = app.doCreateNbnLocations(nbnLocationsObject, securityContextMock);
-    System.out.println(result.getStatus());
     assertTrue(result instanceof Conflict);
     assertEquals(result.getStatus().getStatusCode(), 409);
   }
@@ -180,7 +178,6 @@ public class NbnLocationAppTest {
   @Test
   public void testdoGetLocationsByNbn() {
     OperationResult result = app.doGetLocationsByNbn(VALID_URN_NBN, securityContextMock);
-//    System.out.println(result.getStatus());
     assertTrue(result instanceof Ok);
     assertEquals(result.getStatus().getStatusCode(), 200);
   }

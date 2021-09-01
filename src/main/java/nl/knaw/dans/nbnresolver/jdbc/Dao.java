@@ -82,22 +82,19 @@ public class Dao {
     return idExists;
   }
 
-  public static void createNbn(NbnLocationsObject nbnLocationsObject, int registantId, boolean isFailover) throws SQLException {
+  public static void createNbn(NbnLocationsObject nbnLocationsObject, int registantId) throws SQLException {
     String identifier = nbnLocationsObject.getIdentifier();
     String unfragmented = getUnfragmentedString(identifier);
-
     logger.info("Inserting in database: " + nbnLocationsObject.toString());
-
     Connection conn = PooledDataSource.getConnection();
     conn.setAutoCommit(false);
 
     for (String location : nbnLocationsObject.getLocations()) {
-      String insertNbnStoredProcedureQuery = "{call insertNbnLocation(?, ?, ?, ?)}";
+      String insertNbnStoredProcedureQuery = "{call insertNbnLocation(?, ?, ?)}";
       CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
       callableStatement.setString(1, unfragmented);
       callableStatement.setString(2, location);
       callableStatement.setInt(3, registantId);
-      callableStatement.setBoolean(4, isFailover);
       callableStatement.executeUpdate();
     }
 
@@ -105,17 +102,18 @@ public class Dao {
       conn.close();
     }
     catch (Exception ignored) {
+      System.out.println(ignored.toString());
     }
   }
 
-  public static void deleteRegistrantNbnLocations(String identifier, boolean isLTP) throws SQLException {
+  public static void deleteNbnLocationsByRegId(int registantId, String identifier) throws SQLException {
 
     Connection conn = PooledDataSource.getConnection();
     conn.setAutoCommit(false);
-    String deleteNbnStoredProcedureQuery = "{call deleteNbnLocations(?, ?)}";
+    String deleteNbnStoredProcedureQuery = "{call deleteNbnLocationsByRegistrant(?, ?)}";
     CallableStatement callableStatement = conn.prepareCall(deleteNbnStoredProcedureQuery);
     callableStatement.setString(1, identifier);
-    callableStatement.setBoolean(2, isLTP);
+    callableStatement.setInt(2, registantId);
     callableStatement.executeUpdate();
 
     try {
@@ -129,7 +127,7 @@ public class Dao {
     int registrantId = 0;
 
     Connection conn = PooledDataSource.getConnection();
-    PreparedStatement pstmt = conn.prepareStatement("SELECT C.registrant_id FROM nbnresolver.credentials C INNER JOIN registrant R ON R.registrant_id = C.registrant_id WHERE C.org_prefix = ?;");
+    PreparedStatement pstmt = conn.prepareStatement("SELECT registrant_id FROM registrant WHERE prefix = ?;");
     pstmt.setString(1, org_prefix);
     ResultSet rs = pstmt.executeQuery();
 
@@ -160,7 +158,8 @@ public class Dao {
       conn = PooledDataSource.getConnection();
       if (includeLTP) {
         pstmt = conn.prepareStatement("SELECT L.location_url, IL.isFailover FROM identifier I JOIN identifier_location IL ON I.identifier_id = IL.identifier_id JOIN location L ON L.location_id = IL.location_id WHERE I.identifier_value=? ORDER BY IL.isFailover, IL.last_modified DESC");
-      } else {
+      }
+      else {
         pstmt = conn.prepareStatement("SELECT L.location_url, IL.isFailover FROM identifier I JOIN identifier_location IL ON I.identifier_id = IL.identifier_id JOIN location L ON L.location_id = IL.location_id WHERE I.identifier_value=? AND IL.isFailover=0 ORDER BY IL.isFailover, IL.last_modified DESC");
       }
       pstmt.setString(1, unfragmented);
@@ -240,7 +239,7 @@ public class Dao {
 
     try {
       conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT C.org_prefix FROM nbnresolver.credentials C WHERE C.username = ? AND C.password = ?;");
+      pstmt = conn.prepareStatement("SELECT R.prefix, R.isLTP FROM registrant R inner join credentials C ON R.registrant_id = C.registrant_id WHERE C.username = ? AND C.password = ?;");
       pstmt.setString(1, username);
       pstmt.setString(2, password);
       rs = pstmt.executeQuery();
@@ -250,9 +249,10 @@ public class Dao {
       else {
         user = new User();
         user.setOrgPrefix(rs.getString(1));
+        user.setLTP(rs.getBoolean(2));
       }
     }
-    
+
     finally {
       try {
         if (rs != null) {
@@ -279,8 +279,7 @@ public class Dao {
 
     try {
       conn = PooledDataSource.getConnection();
-//      pstmt = conn.prepareStatement("SELECT C.org_prefix, C.org_prefix FROM nbnresolver.credentials C WHERE C.token = ?;");
-      pstmt = conn.prepareStatement("SELECT C.org_prefix, R.isLTP FROM credentials C inner join registrant R ON C.registrant_id = R.registrant_id WHERE C.token = ?;");
+      pstmt = conn.prepareStatement("SELECT R.prefix, R.isLTP FROM registrant R inner join credentials C ON R.registrant_id = C.registrant_id WHERE C.token = ?;");
       pstmt.setString(1, token);
       rs = pstmt.executeQuery();
       if (!rs.next()) {
