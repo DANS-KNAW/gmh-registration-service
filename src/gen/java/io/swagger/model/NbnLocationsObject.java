@@ -111,12 +111,13 @@ import javax.validation.Valid;
     return Objects.hash(identifier, locations);
   }
 
-
+  /*
+   * Used for logging.
+   */
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class NbnLocationsObject {\n");
-
     sb.append("    identifier: ").append(toIndentedString(identifier)).append("\n");
     sb.append("    locations: ").append(toIndentedString(locations)).append("\n");
     sb.append("}");
