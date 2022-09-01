@@ -29,7 +29,6 @@ DROP TABLE IF EXISTS `credentials`;
 CREATE TABLE `credentials` (
   `credentials_id` int(11) NOT NULL AUTO_INCREMENT,
   `registrant_id` int(11) NOT NULL,
-  `org_prefix` varchar(45) NOT NULL,
   `username` varchar(150) DEFAULT NULL,
   `password` varchar(150) DEFAULT NULL,
   `token` varchar(200) DEFAULT NULL,
@@ -189,6 +188,8 @@ CREATE TABLE `registrant` (
   `registrant_id` int(11) NOT NULL AUTO_INCREMENT,
   `registrant_groupid` varchar(255) NOT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `isLTP` tinyint(1) NOT NULL DEFAULT '0',
+  `prefix` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`registrant_id`),
   UNIQUE KEY `registrant_groupid_UNIQUE` (`registrant_groupid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -211,7 +212,7 @@ USE `nbnresolver` ;
 
 DELIMITER $$
 USE `nbnresolver`$$
-CREATE DEFINER=`nbnresolver_api`@`%` PROCEDURE `deleteNbnObject`(IN nbn_value VARCHAR(150))
+CREATE DEFINER=`nbnresolver_api`@`%` PROCEDURE `deleteNbnObject`(IN nbn_value VARCHAR(510))
 BEGIN
 
 START TRANSACTION;
@@ -224,7 +225,7 @@ INNER JOIN location_registrant LR ON LR.location_id = L.location_id
 INNER JOIN identifier_location IL ON IL.location_id = L.location_id
 INNER JOIN identifier I ON I.identifier_id = IL.identifier_id
 INNER JOIN identifier_registrant IR ON IR.identifier_id = I.identifier_id
-WHERE I.identifier_value = nbn_value ;
+WHERE I.identifier_value = nbn_value AND IL.isFailover=0;
 
 SET FOREIGN_KEY_CHECKS=1;
 
@@ -239,26 +240,37 @@ DELIMITER ;
 
 DELIMITER $$
 USE `nbnresolver`$$
-CREATE DEFINER=`nbnresolver_api`@`%` PROCEDURE `insertNbnObject`(IN nbn_value VARCHAR(150),IN nbn_location VARCHAR(150), IN registrant_id INT(11), IN failover BOOLEAN)
+CREATE DEFINER=`nbnresolver_api`@`%` PROCEDURE `insertNbnObject`(IN nbn_value VARCHAR(510), IN nbn_location VARCHAR(1022), IN registrant_id INT(11), IN failover BOOLEAN)
 BEGIN
 
-DECLARE identifier_id BIGINT(20);
-DECLARE location_id BIGINT(20);
+DECLARE identifier BIGINT(20);
+DECLARE location BIGINT(20);
 
 START TRANSACTION;
-SET identifier_id = (SELECT identifier.identifier_id from nbnresolver.identifier where identifier.identifier_value = nbn_value);
 
-IF (identifier_id IS NULL) THEN
-INSERT INTO identifier (identifier.identifier_value) VALUES (nbn_value);
-SET identifier_id = LAST_INSERT_ID();
-INSERT INTO identifier_registrant (identifier_registrant.identifier_id, identifier_registrant.registrant_id) VALUES (identifier_id, registrant_id );
+SELECT identifier_id INTO identifier from identifier where identifier_value = nbn_value;
+SELECT location_id INTO location from location where location_url = nbn_location;
+
+
+IF (identifier IS NULL) THEN
+	INSERT INTO identifier (identifier_value) VALUES (nbn_value);
+	SET identifier = LAST_INSERT_ID();
 END IF;
+INSERT IGNORE INTO identifier_registrant (identifier_id, registrant_id) VALUES (identifier, registrant_id );
 
-INSERT INTO location (location.location_url) VALUES (nbn_location);
-SET location_id = LAST_INSERT_ID();
+IF (location IS NULL) THEN
+	INSERT INTO location (location_url) VALUES (nbn_location);
+	SET location = LAST_INSERT_ID();
+END IF;
+-- INSERT IGNORE INTO location_registrant (location_id, registrant_id) VALUES (location, registrant_id );
 
-INSERT INTO identifier_location (identifier_location.location_id, identifier_location.identifier_id, identifier_location.last_modified, identifier_location.isFailover) VALUES (location_id , identifier_id , NOW() , failover);
-INSERT INTO location_registrant (location_registrant.location_id, location_registrant.registrant_id) VALUES (location_id, registrant_id );
+-- IF (failover) THEN
+SET @location = location, @identifier = identifier, @last_update=NOW(), @failover=failover;
+INSERT INTO identifier_location (location_id, identifier_id, last_modified, isFailover) VALUES (@location , @identifier , @last_update , @failover)
+ON DUPLICATE KEY UPDATE location_id=@location, identifier_id=@identifier, last_modified=@last_update, isFailover=@failover;
+-- ELSE
+-- 	INSERT IGNORE INTO identifier_location (location_id, identifier_id, last_modified, isFailover) VALUES (location , identifier , NOW() , failover);
+-- END IF;
 
 COMMIT;
 END$$
