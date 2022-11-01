@@ -16,12 +16,14 @@
 package io.swagger.api.factories;
 
 import io.swagger.api.TokenApiService;
-import nl.knaw.dans.nbnresolver.TokenApiServiceImpl;
+import io.swagger.api.impl.TokenApiServiceImpl;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-02-03T12:44:06.016Z[GMT]")public class TokenApiServiceFactory {
-    private final static TokenApiService service = new TokenApiServiceImpl();
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2022-10-27T13:45:58.722388+02:00[Europe/Amsterdam]")
+public class TokenApiServiceFactory {
 
-    public static TokenApiService getTokenApi() {
-        return service;
-    }
+  private final static TokenApiService service = new TokenApiServiceImpl();
+
+  public static TokenApiService getTokenApi() {
+    return service;
+  }
 }

@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.nbnresolver;
+package io.swagger.api.impl;
 
 import io.swagger.api.LocationApiService;
+import io.swagger.api.NotFoundException;
+import nl.knaw.dans.nbnresolver.NbnLocationApp;
 import nl.knaw.dans.nbnresolver.response.OperationResult;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-08T12:34:19.815Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2022-10-27T13:45:58.722388+02:00[Europe/Amsterdam]")
 public class LocationApiServiceImpl extends LocationApiService {
 
   NbnLocationApp app = new NbnLocationApp();
 
   @Override
-  public Response getNbnByLocation(String location, SecurityContext securityContext) {
+  public Response getNbnByLocation(String location, SecurityContext securityContext) throws NotFoundException {
     OperationResult result = app.doGetNbnByLocation(location, securityContext);
     return Response.status(result.getStatus()).entity(result.getResponseBody()).build();
   }

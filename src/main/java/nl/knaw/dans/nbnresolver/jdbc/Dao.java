@@ -15,9 +15,9 @@
  */
 package nl.knaw.dans.nbnresolver.jdbc;
 
-import com.sun.tools.javadoc.JavadocTodo;
+import io.swagger.model.LtpLocation;
 import io.swagger.model.NbnLocationsObject;
-import io.swagger.model.User;
+import nl.knaw.dans.nbnresolver.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ public class Dao {
   }
 
   /**
-   * @param identifier URN:NBN
+   * @param identifier  URN:NBN
    * @param registantId Local-DB Registrant Identifier
    * @return True if the (unfragmented)identifier exists for this registrant in the DB. False otherwise.
    * @throws SQLException
@@ -51,11 +51,9 @@ public class Dao {
     pstmt.setString(1, unfragmented);
     pstmt.setInt(2, registantId);
     ResultSet rs = pstmt.executeQuery();
-
     if (rs.next()) {
       idExists = true;
     }
-
     try {
       rs.close();
       pstmt.close();
@@ -68,21 +66,19 @@ public class Dao {
 
   /**
    * @param identifier Fragmented URN:NBN
-   * @return True if the (unfragmented)identifier exists in the local-DB. False otherwise.
+   * @return True if the (unfragmented)identifier exists in the identifier table only, so even if no locations are associated with it. False otherwise.
    * @throws SQLException
    */
-  public static boolean isExistingIdentifier(String identifier) throws SQLException {
+  public static boolean identifierExists(String identifier) throws SQLException {
     boolean idExists = false;
     String unfragmented = getUnfragmentedString(identifier);
     Connection conn = PooledDataSource.getConnection();
     PreparedStatement pstmt = conn.prepareStatement("SELECT identifier_id FROM identifier WHERE identifier.identifier_value = ?;");
     pstmt.setString(1, unfragmented);
     ResultSet rs = pstmt.executeQuery();
-
     if (rs.next()) {
       idExists = true;
     }
-
     try {
       rs.close();
       pstmt.close();
@@ -94,21 +90,43 @@ public class Dao {
   }
 
   /**
-   * @param nbnLocationsObject NbnLocationsObject object
-   * @param registantId Local-DB Registrant Identifier
+   * @param identifier Fragmented URN:NBN
+   * @return True if the (unfragmented)identifier has at least one location associated with it, that makes it resolvable. False if it has none, or does not exist at all.
    * @throws SQLException
-   * If the registrant is an LTPA, the given locations will be marked as 'Failover'.
+   */
+  public static boolean isResolvableIdentifier(String identifier) throws SQLException {
+    boolean isResolvable = false;
+    String unfragmented = getUnfragmentedString(identifier);
+    Connection conn = PooledDataSource.getConnection();
+    PreparedStatement pstmt = conn.prepareStatement("SELECT I.identifier_id FROM identifier I INNER JOIN identifier_location IL ON I.identifier_id=IL.identifier_id WHERE I.identifier_value = ?;");
+    pstmt.setString(1, unfragmented);
+    ResultSet rs = pstmt.executeQuery();
+    if (rs.next()) {
+      isResolvable = true;
+    }
+    try {
+      rs.close();
+      pstmt.close();
+      conn.close();
+    }
+    catch (Exception ignored) {
+    }
+    return isResolvable;
+  }
+
+  /**
+   * @param nbnLocationsObject NbnLocationsObject object
+   * @param registantId        Local-DB Registrant Identifier
+   * @throws SQLException If the registrant is an LTA, the given locations will be marked as 'Failover'.
    */
   public static void createNbn(NbnLocationsObject nbnLocationsObject, int registantId) throws SQLException {
     String identifier = nbnLocationsObject.getIdentifier();
     String unfragmented_id = getUnfragmentedString(identifier);
-    logger.info("Inserting in database: " + nbnLocationsObject.toString());
     Connection conn = PooledDataSource.getConnection();
     conn.setAutoCommit(false);
 
     for (String location : nbnLocationsObject.getLocations()) {
-      String insertNbnStoredProcedureQuery = "{call insertNbnLocation(?, ?, ?)}";
-      CallableStatement callableStatement = conn.prepareCall(insertNbnStoredProcedureQuery);
+      CallableStatement callableStatement = conn.prepareCall("{call insertNbnLocation(?, ?, ?)}");
       callableStatement.setString(1, unfragmented_id);
       callableStatement.setString(2, location);
       callableStatement.setInt(3, registantId);
@@ -116,30 +134,84 @@ public class Dao {
     }
     try {
       conn.close();
+      logger.info("Inserted in database: " + nbnLocationsObject.toString());
     }
-    catch (Exception ignored) {
-      System.out.println(ignored.toString());
+    catch (Exception e) {
+      logger.error("Inserting in database: " + nbnLocationsObject.toString() + " went wrong. Error: " + e.toString());
     }
   }
-  /* TODO: SP nalopen, en kijken naar fragementen op de NBN*/
+
   /**
-   * @param registantId Local-DB Registrant Identifier
-   * @param identifier URN:NBN (fragmented? unfragmented?)
-   * @throws SQLException
+   * @param nbnLocationsObject NbnLocationsObject object
+   * @param registantId        Local-DB Registrant Identifier
+   * @param isLTP              Is the registrant(Id) an LTA or not.
+   * @throws SQLException If the registrant is an LTA, the given locations will be marked as 'Failover'.
    */
-  public static void deleteNbnLocationsByRegId(int registantId, String identifier) throws SQLException {
+  public static void addNbnLocations(NbnLocationsObject nbnLocationsObject, int registantId, boolean isLTP) throws SQLException {
+    String identifier = nbnLocationsObject.getIdentifier();
+    String unfragmented_id = getUnfragmentedString(identifier);
     Connection conn = PooledDataSource.getConnection();
     conn.setAutoCommit(false);
-    String deleteNbnStoredProcedureQuery = "{call deleteNbnLocationsByRegistrant(?, ?)}";
-    CallableStatement callableStatement = conn.prepareCall(deleteNbnStoredProcedureQuery);
-    callableStatement.setString(1, identifier);
-    callableStatement.setInt(2, registantId);
-    callableStatement.executeUpdate();
 
+    for (String location : nbnLocationsObject.getLocations()) {
+      CallableStatement callableStatement = conn.prepareCall("{call addNbnLocation(?, ?, ?, ?)}");
+      callableStatement.setString(1, unfragmented_id);
+      callableStatement.setString(2, location);
+      callableStatement.setInt(3, registantId);
+      callableStatement.setBoolean(4, isLTP);
+      callableStatement.executeUpdate();
+    }
     try {
       conn.close();
+      logger.info("Inserted in database: " + nbnLocationsObject.toString());
     }
-    catch (Exception ignored) {
+    catch (Exception e) {
+      logger.error("Inserting in database: " + nbnLocationsObject.toString() + " went wrong. Error: " + e.toString());
+    }
+  }
+
+  //  /**
+  //   * @param registantId Local-DB Registrant Identifier
+  //   * @param identifier  URN:NBN (fragmented)
+  //   * @throws SQLException Deletes URN:NBN locations registered by this Registrant.
+  //   */
+  //  public static void deleteNbnLocationsByRegId(int registantId, String identifier) throws SQLException {
+  //    String unfragmented_id = getUnfragmentedString(identifier);
+  //    Connection conn = PooledDataSource.getConnection();
+  //    conn.setAutoCommit(false);
+  //    CallableStatement callableStatement = conn.prepareCall("{call deleteNbnLocationsByRegistrant(?, ?)}");
+  //    callableStatement.setString(1, unfragmented_id);
+  //    callableStatement.setInt(2, registantId);
+  //    callableStatement.executeUpdate();
+  //    try {
+  //      conn.close();
+  //      logger.info("Deleted locations from DB for registrant_id: " + registantId + " and NBN identifier: " + unfragmented_id);
+  //    }
+  //    catch (Exception e) {
+  //      logger.error("Deleting locations from DB for registrant_id: " + registantId + " and NBN identifier: " + unfragmented_id + " went wrong. Error: " + e.toString());
+  //    }
+  //  }
+
+  /**
+   * @param registantId Local-DB Registrant Identifier
+   * @param identifier  URN:NBN (fragmented)
+   * @throws SQLException Deletes URN:NBN locations registered by this Registrant.
+   */
+  public static void deleteNbnLocationsByRegistrantId(int registantId, String identifier, boolean isLTP) throws SQLException {
+    String unfragmented_id = getUnfragmentedString(identifier);
+    Connection conn = PooledDataSource.getConnection();
+    conn.setAutoCommit(false);
+    CallableStatement callableStatement = conn.prepareCall("{call deleteNbnLocationsByRegistrantId(?, ?, ?)}");
+    callableStatement.setString(1, unfragmented_id);
+    callableStatement.setInt(2, registantId);
+    callableStatement.setBoolean(3, isLTP);
+    callableStatement.executeUpdate();
+    try {
+      conn.close();
+      logger.info("Deleted locations from DB for registrant_id: " + registantId + " and NBN identifier: " + unfragmented_id);
+    }
+    catch (Exception e) {
+      logger.error("Deleting locations from DB for registrant_id: " + registantId + " and NBN identifier: " + unfragmented_id + " went wrong. Error: " + e.toString());
     }
   }
 
@@ -154,10 +226,8 @@ public class Dao {
     PreparedStatement pstmt = conn.prepareStatement("SELECT registrant_id FROM registrant WHERE prefix = ?;");
     pstmt.setString(1, nbn_org_prefix);
     ResultSet rs = pstmt.executeQuery();
-
     while (rs.next())
       registrantId = rs.getInt("registrant_id");
-
     try {
       rs.close();
       pstmt.close();
@@ -174,13 +244,12 @@ public class Dao {
    * @param includeLTP Whether or not to include the failover locations for this URN:NBN.
    * @return A list of locations registered for this URN:NBN, sorted by modificationdate, newest first.
    */
-  public static List<String> getLocations(String identifier, boolean includeLTP) {
-    List<String> locations = new ArrayList<>();
+  public static List<LtpLocation> getLocations(String identifier, boolean includeLTP) {
+    List<LtpLocation> locations = new ArrayList<>();
     String unfragmented = getUnfragmentedString(identifier);
     ResultSet rs = null;
     Connection conn = null;
     PreparedStatement pstmt = null;
-
     try {
       conn = PooledDataSource.getConnection();
       if (includeLTP) {
@@ -191,13 +260,15 @@ public class Dao {
       }
       pstmt.setString(1, unfragmented);
       rs = pstmt.executeQuery();
-
       while (rs.next()) {
-        locations.add(rs.getString(1));
+        LtpLocation loc = new LtpLocation();
+        loc.setUri(rs.getString(1));
+        loc.setLtp(rs.getBoolean(2));
+        locations.add(loc);
       }
     }
     catch (SQLException e) {
-      logger.error("Locations could not be retrieved from database for Nbn: " + identifier);
+      logger.error("Locations could not be retrieved from database for Nbn: " + identifier + ". Error: " + e.toString());
       logger.debug(e.getMessage());
     }
     finally {
@@ -239,7 +310,7 @@ public class Dao {
       }
     }
     catch (SQLException e) {
-      logger.error("Nbn could not be retrieved from database for location: " + location);
+      logger.error("Nbn could not be retrieved from database for location: " + location + ". Error: " + e.toString());
       logger.debug(e.getMessage());
     }
     finally {
@@ -279,15 +350,16 @@ public class Dao {
       pstmt.setString(2, password);
       rs = pstmt.executeQuery();
       if (!rs.next()) {
+        logger.warn("Provided credentials were invalid for username: " + username);
         throw new InvalidCredentialsException("Provided credentials were invalid");
       }
       else {
         user = new User();
         user.setOrgPrefix(rs.getString(1));
         user.setLTP(rs.getBoolean(2));
+        logger.debug("Called getUserByCredentials: " + username);
       }
     }
-
     finally {
       try {
         if (rs != null) {
@@ -317,13 +389,13 @@ public class Dao {
     ResultSet rs = null;
     Connection conn = null;
     PreparedStatement pstmt = null;
-
     try {
       conn = PooledDataSource.getConnection();
       pstmt = conn.prepareStatement("SELECT R.prefix, R.isLTP FROM registrant R inner join credentials C ON R.registrant_id = C.registrant_id WHERE C.token = ?;");
       pstmt.setString(1, token);
       rs = pstmt.executeQuery();
       if (!rs.next()) {
+        logger.warn("Unauthorized token: " + token);
         throw new InvalidTokenException("Invalid Token");
       }
       else {
@@ -351,23 +423,24 @@ public class Dao {
   }
 
   /**
-   * @param token New JSON Web Token (JWT) string that needs to be registered with a given user.
-   * @param username Name of the existing user.
-   * @param password Password of the existing user.
+   * @param new_jwttoken New JSON Web Token (JWT) string that needs to be registered with a given user.
+   * @param username     Name of the existing user.
+   * @param password     Password of the existing user.
    * @throws SQLException If the token can not be persisted.
    */
-  public static void registerToken(String token, String username, String password) throws SQLException {
+  public static void registerToken(String new_jwttoken, String username, String password) throws SQLException {
     Connection conn = null;
     PreparedStatement pstmt = null;
 
     try {
       conn = PooledDataSource.getConnection();
       pstmt = conn.prepareStatement("UPDATE credentials C SET C.token = ? WHERE C.username = ? AND C.password = ?;");
-      pstmt.setString(1, token);
+      pstmt.setString(1, new_jwttoken);
       pstmt.setString(2, username);
       pstmt.setString(3, password);
       int resultCode = pstmt.executeUpdate();
       if (resultCode != 1) {
+        logger.error("Error registering new JWT token " + new_jwttoken + " for: " + username);
         throw new SQLException("Token could not be persisted");
       }
     }
@@ -394,10 +467,3 @@ public class Dao {
   }
 
 }
-
-
-
-
-
-
-

@@ -15,9 +15,9 @@
  */
 package nl.knaw.dans.nbnresolver.authentication;
 
-import io.swagger.model.User;
 import nl.knaw.dans.nbnresolver.jdbc.Dao;
 import nl.knaw.dans.nbnresolver.jdbc.InvalidTokenException;
+import nl.knaw.dans.nbnresolver.model.User;
 import nl.knaw.dans.nbnresolver.response.InternalServerError;
 import nl.knaw.dans.nbnresolver.response.Unauthorized;
 import org.slf4j.Logger;
@@ -27,6 +27,7 @@ import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -38,6 +39,7 @@ import java.sql.SQLException;
 
 @Secured
 @Provider
+@PreMatching //https://stackoverflow.com/questions/56799899/jersey-securitycontext-getuserprincipal-returns-null-for-non-singleton-resourc
 @Priority(Priorities.AUTHENTICATION)
 public class AuthenticationFilter implements ContainerRequestFilter {
 
@@ -83,15 +85,19 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
       @Override
       public String getAuthenticationScheme() {
-        return "Bearer";
+        return AUTHENTICATION_SCHEME;
       }
     });
   }
 
+  // Check if the Authorization header is valid
+  // It must not be null and must be prefixed with "Bearer" plus a whitespace
+  // Authentication scheme comparison must be case-insensitive
   private boolean isTokenBasedAuthentication(String authorizationHeader) {
     return authorizationHeader != null && authorizationHeader.toLowerCase().startsWith(AUTHENTICATION_SCHEME.toLowerCase() + " ");
   }
 
+  // Abort the filter chain with a 401 status code
   private void abortWithUnauthorized(ContainerRequestContext requestContext) {
     Unauthorized unauthorized = new Unauthorized();
     requestContext.abortWith(Response.status(unauthorized.getStatus()).entity(unauthorized.getResponseBody()).build());
@@ -106,7 +112,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
   // Validates by getting the current User by the token from the request.
   // If the db returns no result it means the token is not in the db and therefore not valid.
   private User validateToken(String token, ContainerRequestContext requestContext) {
-
     User currentUser = null;
 
     try {

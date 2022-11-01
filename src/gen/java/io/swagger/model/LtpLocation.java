@@ -35,51 +35,51 @@ import javax.validation.constraints.*;
 import javax.validation.Valid;
 
 /**
- * Credentials
+ * LtpLocation
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2022-10-27T13:45:58.722388+02:00[Europe/Amsterdam]")public class Credentials   {
-  @JsonProperty("username")
-  private String username = null;
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2022-10-27T13:45:58.722388+02:00[Europe/Amsterdam]")public class LtpLocation   {
+  @JsonProperty("uri")
+  private String uri = null;
 
-  @JsonProperty("password")
-  private String password = null;
+  @JsonProperty("ltp")
+  private Boolean ltp = null;
 
-  public Credentials username(String username) {
-    this.username = username;
+  public LtpLocation uri(String uri) {
+    this.uri = uri;
     return this;
   }
 
   /**
-   * Get username
-   * @return username
+   * Get uri
+   * @return uri
    **/
-  @JsonProperty("username")
-  @Schema(example = "username", description = "")
-  public String getUsername() {
-    return username;
+  @JsonProperty("uri")
+  @Schema(example = "https://example.com/location1", description = "")
+  public String getUri() {
+    return uri;
   }
 
-  public void setUsername(String username) {
-    this.username = username;
+  public void setUri(String uri) {
+    this.uri = uri;
   }
 
-  public Credentials password(String password) {
-    this.password = password;
+  public LtpLocation ltp(Boolean ltp) {
+    this.ltp = ltp;
     return this;
   }
 
   /**
-   * Get password
-   * @return password
+   * Get ltp
+   * @return ltp
    **/
-  @JsonProperty("password")
-  @Schema(example = "password", description = "")
-  public String getPassword() {
-    return password;
+  @JsonProperty("ltp")
+  @Schema(example = "false", description = "")
+  public Boolean isLtp() {
+    return ltp;
   }
 
-  public void setPassword(String password) {
-    this.password = password;
+  public void setLtp(Boolean ltp) {
+    this.ltp = ltp;
   }
 
 
@@ -91,24 +91,24 @@ import javax.validation.Valid;
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Credentials credentials = (Credentials) o;
-    return Objects.equals(this.username, credentials.username) &&
-        Objects.equals(this.password, credentials.password);
+    LtpLocation ltpLocation = (LtpLocation) o;
+    return Objects.equals(this.uri, ltpLocation.uri) &&
+        Objects.equals(this.ltp, ltpLocation.ltp);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(username, password);
+    return Objects.hash(uri, ltp);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Credentials {\n");
+    sb.append("class LtpLocation {\n");
     
-    sb.append("    username: ").append(toIndentedString(username)).append("\n");
-    sb.append("    password: ").append(toIndentedString(password)).append("\n");
+    sb.append("    uri: ").append(toIndentedString(uri)).append("\n");
+    sb.append("    ltp: ").append(toIndentedString(ltp)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -15,6 +15,8 @@
  */
 package nl.knaw.dans.nbnresolver.validation;
 
+import io.swagger.model.LtpLocation;
+
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +36,16 @@ public class LocationValidator {
     return matcher.matches();
   }
 
+  public static boolean validateAllLtpLocations(List<LtpLocation> locations) {
+    for (LtpLocation location : locations) {
+      boolean isValid = validate(location.getUri());
+      if (!isValid) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public static boolean validateAllLocations(List<String> locations) {
     for (String location : locations) {
       boolean isValid = validate(location);
@@ -43,4 +55,5 @@ public class LocationValidator {
     }
     return true;
   }
+
 }

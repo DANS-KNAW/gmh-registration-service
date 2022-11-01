@@ -107,7 +107,7 @@
                             <goal>start</goal>
                         </goals>
                         <configuration>
-                            <scanIntervalSeconds>0</scanIntervalSeconds><!--              <daemon>true</daemon>-->
+                            <scanIntervalSeconds>0</scanIntervalSeconds>
                         </configuration>
                     </execution>
                     <execution>
@@ -122,7 +122,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.9.1</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
@@ -290,9 +290,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <swagger-core-version>2.0.0</swagger-core-version>
-        <jetty-version>9.2.9.v20150224</jetty-version>
-        <jersey2-version>2.27</jersey2-version>
+        <swagger-core-version>2.0.10</swagger-core-version>
+        <jetty-version>9.4.44.v20210927</jetty-version>
+        <jersey2-version>2.35</jersey2-version>
         <jackson-version>2.9.5</jackson-version>
         <junit-version>5.7.0</junit-version>
         <logback-version>1.2.9</logback-version>

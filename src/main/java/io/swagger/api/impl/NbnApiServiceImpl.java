@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.nbnresolver;
+package io.swagger.api.impl;
 
 import io.swagger.api.NbnApiService;
 import io.swagger.model.NbnLocationsObject;
+import nl.knaw.dans.nbnresolver.NbnLocationApp;
 import nl.knaw.dans.nbnresolver.response.OperationResult;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-08T12:34:19.815Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2022-10-26T14:14:37.219784+02:00[Europe/Amsterdam]")
 public class NbnApiServiceImpl extends NbnApiService {
 
   NbnLocationApp app = new NbnLocationApp();

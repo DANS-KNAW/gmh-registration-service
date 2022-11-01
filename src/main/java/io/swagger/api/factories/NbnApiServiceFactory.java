@@ -16,9 +16,11 @@
 package io.swagger.api.factories;
 
 import io.swagger.api.NbnApiService;
-import nl.knaw.dans.nbnresolver.NbnApiServiceImpl;
+import io.swagger.api.impl.NbnApiServiceImpl;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-01-22T09:23:35.355Z[GMT]")public class NbnApiServiceFactory {
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2022-10-27T13:45:58.722388+02:00[Europe/Amsterdam]")
+public class NbnApiServiceFactory {
+
   private final static NbnApiService service = new NbnApiServiceImpl();
 
   public static NbnApiService getNbnApi() {

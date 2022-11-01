@@ -30,56 +30,66 @@ package io.swagger.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.model.LtpLocation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.*;
 import javax.validation.Valid;
 
 /**
- * Credentials
+ * NbnLtpLocationsObject
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2022-10-27T13:45:58.722388+02:00[Europe/Amsterdam]")public class Credentials   {
-  @JsonProperty("username")
-  private String username = null;
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2022-10-27T13:45:58.722388+02:00[Europe/Amsterdam]")public class NbnLtpLocationsObject   {
+  @JsonProperty("identifier")
+  private String identifier = null;
 
-  @JsonProperty("password")
-  private String password = null;
+  @JsonProperty("locations")
+  private java.util.List<LtpLocation> locations = null;
 
-  public Credentials username(String username) {
-    this.username = username;
+  public NbnLtpLocationsObject identifier(String identifier) {
+    this.identifier = identifier;
     return this;
   }
 
   /**
-   * Get username
-   * @return username
+   * Get identifier
+   * @return identifier
    **/
-  @JsonProperty("username")
-  @Schema(example = "username", description = "")
-  public String getUsername() {
-    return username;
+  @JsonProperty("identifier")
+  @Schema(description = "")
+  public String getIdentifier() {
+    return identifier;
   }
 
-  public void setUsername(String username) {
-    this.username = username;
+  public void setIdentifier(String identifier) {
+    this.identifier = identifier;
   }
 
-  public Credentials password(String password) {
-    this.password = password;
+  public NbnLtpLocationsObject locations(java.util.List<LtpLocation> locations) {
+    this.locations = locations;
+    return this;
+  }
+
+  public NbnLtpLocationsObject addLocationsItem(LtpLocation locationsItem) {
+    if (this.locations == null) {
+      this.locations = new java.util.ArrayList<>();
+    }
+    this.locations.add(locationsItem);
     return this;
   }
 
   /**
-   * Get password
-   * @return password
+   * Get locations
+   * @return locations
    **/
-  @JsonProperty("password")
-  @Schema(example = "password", description = "")
-  public String getPassword() {
-    return password;
+  @JsonProperty("locations")
+  @Schema(description = "")
+  @Valid
+  public java.util.List<LtpLocation> getLocations() {
+    return locations;
   }
 
-  public void setPassword(String password) {
-    this.password = password;
+  public void setLocations(java.util.List<LtpLocation> locations) {
+    this.locations = locations;
   }
 
 
@@ -91,24 +101,24 @@ import javax.validation.Valid;
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Credentials credentials = (Credentials) o;
-    return Objects.equals(this.username, credentials.username) &&
-        Objects.equals(this.password, credentials.password);
+    NbnLtpLocationsObject nbnLtpLocationsObject = (NbnLtpLocationsObject) o;
+    return Objects.equals(this.identifier, nbnLtpLocationsObject.identifier) &&
+        Objects.equals(this.locations, nbnLtpLocationsObject.locations);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(username, password);
+    return Objects.hash(identifier, locations);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Credentials {\n");
+    sb.append("class NbnLtpLocationsObject {\n");
     
-    sb.append("    username: ").append(toIndentedString(username)).append("\n");
-    sb.append("    password: ").append(toIndentedString(password)).append("\n");
+    sb.append("    identifier: ").append(toIndentedString(identifier)).append("\n");
+    sb.append("    locations: ").append(toIndentedString(locations)).append("\n");
     sb.append("}");
     return sb.toString();
   }

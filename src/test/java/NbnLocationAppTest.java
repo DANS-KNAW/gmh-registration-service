@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import io.swagger.model.LtpLocation;
 import io.swagger.model.NbnLocationsObject;
+import io.swagger.model.NbnLtpLocationsObject;
 import nl.knaw.dans.nbnresolver.NbnLocationApp;
 import nl.knaw.dans.nbnresolver.jdbc.Dao;
 import nl.knaw.dans.nbnresolver.response.BadRequest;
@@ -54,19 +56,22 @@ public class NbnLocationAppTest {
 
   private SecurityContext securityContextMock;
   private Principal principalMock;
-  private NbnLocationApp app;
+  private NbnLocationApp app = new NbnLocationApp();
+  private NbnLtpLocationsObject nbnLtpLocationsObject;
   private NbnLocationsObject nbnLocationsObject;
   private final String VALID_URN_NBN = "urn:nbn:nl:ui:17-example";
   private final String INVALID_URN_NBN = "urn:nbn:nl:ui-example";
   private final String EXISTING_URN_NBN = "urn:nbn:nl:ui:17-existing";
   private final String NON_EXISTING_URN_NBN = "urn:nbn:nl:ui:17-non-existing";
   private final String URN_NBN_INVALID_PREFIX = "urn:nbn:nl:gh:11-example";
+  private final List<LtpLocation> TEST_LTP_LOCATIONS = Arrays.asList(new LtpLocation[]{new LtpLocation().uri("http://test_location1.nl"), new LtpLocation().uri("http://test_location2.nl")});
   private final List<String> TEST_LOCATIONS = Arrays.asList("http://test_location1.nl", "http://test_location2.nl");
   private final String NON_EXISTING_LOCATION = "http://test_location_non_existing.nl";
 
   @Before
   public void setup() throws SQLException {
-    app = new NbnLocationApp();
+    nbnLtpLocationsObject = new NbnLtpLocationsObject();
+    nbnLtpLocationsObject.setLocations(TEST_LTP_LOCATIONS);
     nbnLocationsObject = new NbnLocationsObject();
     nbnLocationsObject.setLocations(TEST_LOCATIONS);
     prepareMocks();
@@ -79,12 +84,13 @@ public class NbnLocationAppTest {
     when(securityContextMock.getUserPrincipal()).thenReturn(principalMock);
     when(securityContextMock.isUserInRole("LTP")).thenReturn(false);
     when(principalMock.getName()).thenReturn("urn:nbn:nl:ui:17");
-    when(Dao.getLocations(VALID_URN_NBN, true)).thenReturn(TEST_LOCATIONS);
-    when(Dao.getLocations(VALID_URN_NBN, false)).thenReturn(TEST_LOCATIONS);
+    when(Dao.getLocations(VALID_URN_NBN, true)).thenReturn(TEST_LTP_LOCATIONS);
+    when(Dao.getLocations(VALID_URN_NBN, false)).thenReturn(TEST_LTP_LOCATIONS);
     when(Dao.getRegistrantIdByOrgPrefix(any())).thenReturn(1);
-    when(Dao.isExistingIdentifier(EXISTING_URN_NBN)).thenReturn(true);
+    when(Dao.identifierExists(EXISTING_URN_NBN)).thenReturn(true);
     when(Dao.isRegistrantIdentifier(VALID_URN_NBN, 1)).thenReturn(false);
     when(Dao.isRegistrantIdentifier(EXISTING_URN_NBN, 1)).thenReturn(true);
+    when(Dao.isResolvableIdentifier(EXISTING_URN_NBN)).thenReturn(true);
     when(Dao.getLocations(NON_EXISTING_URN_NBN, true)).thenReturn(emptyList());
     when(Dao.getNbnByLocation(TEST_LOCATIONS.get(0))).thenReturn(singletonList(VALID_URN_NBN));
     when(Dao.getNbnByLocation(NON_EXISTING_LOCATION)).thenReturn(emptyList());
@@ -126,7 +132,7 @@ public class NbnLocationAppTest {
   public void testDoGetNbnRecord() {
     Map<String, Object> nbnRecordInput = new HashMap<>();
     nbnRecordInput.put("identifier", VALID_URN_NBN);
-    nbnRecordInput.put("locations", TEST_LOCATIONS);
+    nbnRecordInput.put("locations", TEST_LTP_LOCATIONS);
     OperationResult result = app.doGetNbnRecord(VALID_URN_NBN, securityContextMock);
     assertTrue(result instanceof Ok);
     assertEquals(result.getStatus().getStatusCode(), 200);

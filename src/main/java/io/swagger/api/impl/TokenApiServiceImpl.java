@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.nbnresolver;
+package io.swagger.api.impl;
 
-import io.swagger.api.ApiResponseMessage;
 import io.swagger.api.NotFoundException;
 import io.swagger.api.TokenApiService;
-import nl.knaw.dans.nbnresolver.authentication.AuthenticationFilter;
-import nl.knaw.dans.nbnresolver.jdbc.Dao;
 import io.swagger.model.Credentials;
-import io.swagger.model.User;
+
+import nl.knaw.dans.nbnresolver.jdbc.Dao;
 import nl.knaw.dans.nbnresolver.jdbc.InvalidCredentialsException;
+import nl.knaw.dans.nbnresolver.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +34,7 @@ import java.util.Base64;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2021-02-03T12:44:06.016Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaJerseyServerCodegen", date = "2022-10-27T13:45:58.722388+02:00[Europe/Amsterdam]")
 public class TokenApiServiceImpl extends TokenApiService {
 
   User user;
@@ -44,7 +43,7 @@ public class TokenApiServiceImpl extends TokenApiService {
   private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder();
 
   @Override
-  public Response token (Credentials body, SecurityContext securityContext) throws NotFoundException {
+  public Response token(Credentials body, SecurityContext securityContext) throws NotFoundException {
     String username = body.getUsername();
     String password = body.getPassword();
 
@@ -84,5 +83,3 @@ public class TokenApiServiceImpl extends TokenApiService {
   }
 
 }
-
-

@@ -28,7 +28,7 @@ import io.swagger.v3.oas.annotations.info.License;
 @OpenAPIDefinition(
     info = @Info(
         title = "Swagger Server", 
-        version = "0.1.0", 
+        version = "0.1.1", 
         description = "For easy retrieval of a publication or data, assigned with a Dutch NBN in the Netherlands, a service called <a href ='https://persistent-identifier.nl'>National Resolver</a> is available. This service is managed by <a href ='https://dans.knaw.nl'>Data Archiving and Networked Services</a> (DANS) and <a href=\"https://www.kb.nl\">KB, National Library of the Netherlands</a> (KB). Find out more about the <a href=\"https://www.kb.nl/organisatie/onderzoek-expertise/informatie-infrastructuur-diensten-voor-bibliotheken/registration-agency-nbn\">'Registration Agency NBN'</a>.",
         termsOfService = "",
         contact = @Contact(email = "harvester@dans.knaw.nl"),
