@@ -69,7 +69,7 @@ paths:
       security:
         - BearerAuth: [ ]
       summary: 'Returns URN:NBN object (urn:nbn + locations) for this {identifier}.'
-      description: 'Returns URN:NBN object (urn:nbn + LTP location objects) for this {identifier}.<br />The identifier must have a prefix that matches the authenticated user if not registered as LTP user. HTTP 404 otherwise.<br />Use this method to see if your URN:NBN has a LTP location associated with it.'
+      description: 'Returns URN:NBN object (urn:nbn + LTP location objects) for this {identifier}.<br />The identifier must have a prefix that matches the authenticated user if it is not a LTP user. HTTP 404 otherwise.<br />Use this method to see if your URN:NBN has a LTP location associated with it.'
       operationId: 'getNbnRecord'
       responses:
         '200':

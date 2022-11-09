@@ -47,7 +47,7 @@ public class NbnLocationApp {
 
   public NbnLocationApp() {
   }
-
+  //TODO: Undocumented feature: LTP is able to update ALL nbn's.
   public OperationResult doCreateNbnLocations(NbnLocationsObject body, SecurityContext securityContext) {
     String identifier = body.getIdentifier();
     boolean nbnIsValid = NbnValidator.validate(body.getIdentifier());
@@ -80,17 +80,33 @@ public class NbnLocationApp {
     if (!NbnValidator.validate(identifier))
       return new BadRequest(identifier);
 
-    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !securityContext.isUserInRole("LTP")) //TODO: Undocumented feature: LTP is able to update ALL nbn's.
+    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !Dao.hasLtpLocation(identifier, securityContext.getUserPrincipal().getName()))
       return new Forbidden();
 
-    List<LtpLocation> locations = Dao.getLocations(identifier, securityContext.isUserInRole("LTP"));
+    List<LtpLocation> locations = Dao.getLocations(identifier, true);
     if (locations.isEmpty()) {
       return new NotFound(identifier);
     }
+
     else {
       nbnRecord.put("identifier", identifier);
       nbnRecord.put("locations", locations);
       return new Ok(nbnRecord);
+    }
+  }
+
+  public OperationResult doGetLocationsByNbn(String identifier, SecurityContext securityContext) {
+    if (!NbnValidator.validate(identifier))
+      return new BadRequest(identifier);
+
+    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !Dao.hasLtpLocation(identifier, securityContext.getUserPrincipal().getName()))
+      return new Forbidden();
+
+    List<LtpLocation> locations = Dao.getLocations(identifier, true);
+    if (locations.isEmpty())
+      return new NotFound(identifier);
+    else {
+      return new Ok(locations);
     }
   }
 
@@ -119,19 +135,6 @@ public class NbnLocationApp {
     catch (SQLException e) {
       logger.error("A Sql error occurred: " + e);
       return new InternalServerError();
-    }
-  }
-
-  public OperationResult doGetLocationsByNbn(String identifier, SecurityContext securityContext) {
-    if (!NbnValidator.validate(identifier))
-      return new BadRequest(identifier);
-    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !securityContext.isUserInRole("LTP"))
-      return new Forbidden(); //Prefix does not match and no LTP Archive
-    List<LtpLocation> locations = Dao.getLocations(identifier, true); //securityContext.isUserInRole("LTP")
-    if (locations.isEmpty())
-      return new NotFound(identifier);
-    else {
-      return new Ok(locations);
     }
   }
 

@@ -30,6 +30,6 @@ public class Forbidden implements OperationResult {
 
   @Override
   public Object getResponseBody() {
-    return new ResponseMessage(FORBIDDEN.getStatusCode(), "URN:NBN identifier is valid, but does not match the prefix of the authenticated user");
+    return new ResponseMessage(FORBIDDEN.getStatusCode(), "The identifier cannot be registered by you, or it is unknown.");
   }
 }

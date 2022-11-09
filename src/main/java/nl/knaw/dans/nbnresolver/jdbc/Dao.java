@@ -508,4 +508,43 @@ public class Dao {
     }
     return isFailover;
   }
+
+  public static boolean hasLtpLocation(String identifier, String orgPrefix) {
+    boolean hasFailover = false;
+    ResultSet rs = null;
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+
+    try {
+      int registrant_id = getRegistrantIdByOrgPrefix(orgPrefix);
+      conn = PooledDataSource.getConnection();
+      pstmt = conn.prepareStatement("SELECT IL.isFailover FROM identifier_location IL JOIN identifier I ON IL.identifier_id = I.identifier_id JOIN identifier_registrant IR ON I.identifier_id = IR.identifier_id WHERE IL.isFailover = '1' AND I.identifier_value = ? AND IR.registrant_id = ?;");
+      pstmt.setString(1, identifier);
+      pstmt.setInt(2, registrant_id);
+      rs = pstmt.executeQuery();
+      if (rs.next()) {
+        hasFailover = true;
+      }
+    }
+    catch (SQLException e) {
+      logger.error("Could not retrieve isFailover from database for identifier: " + identifier + ". Error: " + e.toString());
+      logger.debug(e.getMessage());
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (pstmt != null) {
+          pstmt.close();
+        }
+        if (conn != null) {
+          conn.close();
+        }
+      }
+      catch (Exception ignored) {
+      }
+    }
+    return hasFailover;
+  }
 }
