@@ -33,7 +33,7 @@ public class NotFound implements OperationResult {
 
   @Override
   public Object getResponseBody() {
-    return new ResponseMessage(NOT_FOUND.getStatusCode(), "Supplied URN:NBN identifier not found: " + identifier);
+    return new ResponseMessage(NOT_FOUND.getStatusCode(), "Object not found: " + identifier);
   }
 }
 
