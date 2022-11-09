@@ -154,8 +154,8 @@ paths:
       security:
         - BearerAuth: [ ]
       operationId: getNbnByLocation
-      summary: Returns URN:NBN identifier(s) registered for this location.
-      description: Returns URN:NBN identifier(s) associated with this location, if at least one of them is registered to the authenticated user.
+      summary: Returns URN:NBN identifier(s) registered to this location.
+      description: Returns URN:NBN identifier(s) registered to this location, if 1) at least one of the registered NBN's prefixes belong to the authenticated user, or 2) this is an LTP location registered by the authenticated LTP archive.
       responses:
         '200':
           content:
