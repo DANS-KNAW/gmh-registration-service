@@ -136,8 +136,8 @@ public class NbnLocationApp {
   }
 
   public OperationResult doGetNbnByLocation(String location, SecurityContext securityContext) {
-
-    //TODO: Do we need to check locationValidator for BAD REQUEST?
+    if (!LocationValidator.validate(location))
+      return new BadRequest(location);
     List<String> nbn = Dao.getNbnByLocation(location);
     boolean isMatch = false;
     if (securityContext.isUserInRole("LTP")) { // No restrictions for LTP.

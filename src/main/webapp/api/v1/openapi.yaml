@@ -97,7 +97,7 @@ paths:
       operationId: 'updateNbnRecord'
       requestBody:
         required: true
-        description: A json object that contains the associated locations for the {identifier}
+        description: A json object that contains the associated locations for the {identifier}.
         content:
           application/json:
             schema:
@@ -165,6 +165,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/NbnIdentifier'
           description: OK
+        '400':
+          description: Invalid location URL pattern supplied
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -181,7 +183,7 @@ paths:
       operationId: 'token'
       requestBody:
         required: true
-        description: A json object with username and password
+        description: A json object with username and password.
         content:
           application/json:
             schema:
@@ -211,13 +213,7 @@ tags:
 components:
   responses:
     UnauthorizedError:
-      description: Authentication information is missing or invalid
-#      headers:
-#        WWW_Authenticate:
-#          explode: false
-#          schema:
-#            type: string
-#          style: simple
+      description: Authentication information is missing or invalid.
 
   parameters:
     'nbn_identifier':
