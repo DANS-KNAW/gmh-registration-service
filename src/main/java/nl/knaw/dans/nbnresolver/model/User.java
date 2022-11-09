@@ -35,6 +35,8 @@ public class User implements java.security.Principal {
 
   private String orgPrefix;
   private boolean isLTP;
+  private String registrantGroupId;
+  private int registrantId;
 
   public User() {
   }
@@ -55,21 +57,20 @@ public class User implements java.security.Principal {
     this.orgPrefix = orgPrefix;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    User user = (User) o;
-    return Objects.equals(this.isLTP, user.isLTP) && Objects.equals(this.orgPrefix, user.orgPrefix);
+  public String getRegistrantGroupId() {
+    return registrantGroupId;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(isLTP, orgPrefix);
+  public void setRegistrantGroupId(String registrantGroupId) {
+    this.registrantGroupId = registrantGroupId;
+  }
+
+  public int getRegistrantId() {
+    return registrantId;
+  }
+
+  public void setRegistrantId(int registrantId) {
+    this.registrantId = registrantId;
   }
 
   @Override
@@ -83,11 +84,28 @@ public class User implements java.security.Principal {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    User user = (User) o;
+    return isLTP == user.isLTP && registrantId == user.registrantId && orgPrefix.equals(user.orgPrefix) && registrantGroupId.equals(user.registrantGroupId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(orgPrefix, isLTP, registrantGroupId, registrantId);
+  }
+
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class User {\n");
     sb.append("    isLTP: ").append(toIndentedString(isLTP)).append("\n");
     sb.append("    orgPrefix: ").append(toIndentedString(orgPrefix)).append("\n");
+    sb.append("    registrantGroupId: ").append(toIndentedString(registrantGroupId)).append("\n");
+    sb.append("    registrantId: ").append(toIndentedString(registrantId)).append("\n");
     sb.append("}");
     return sb.toString();
   }

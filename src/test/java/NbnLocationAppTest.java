@@ -92,8 +92,8 @@ public class NbnLocationAppTest {
     when(Dao.isRegistrantIdentifier(EXISTING_URN_NBN, 1)).thenReturn(true);
     when(Dao.isResolvableIdentifier(EXISTING_URN_NBN)).thenReturn(true);
     when(Dao.getLocations(NON_EXISTING_URN_NBN, true)).thenReturn(emptyList());
-    when(Dao.getNbnByLocation(TEST_LOCATIONS.get(0))).thenReturn(singletonList(VALID_URN_NBN));
-    when(Dao.getNbnByLocation(NON_EXISTING_LOCATION)).thenReturn(emptyList());
+    when(Dao.getNbnsByLocation(TEST_LOCATIONS.get(0))).thenReturn(singletonList(VALID_URN_NBN));
+    when(Dao.getNbnsByLocation(NON_EXISTING_LOCATION)).thenReturn(emptyList());
   }
 
   @Test

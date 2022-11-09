@@ -293,7 +293,7 @@ public class Dao {
    * @param location Location/URI string
    * @return List of URN:NBN's for the given location. Empty List if no registered URN:NBN has been found for the location.
    */
-  public static List<String> getNbnByLocation(String location) {
+  public static List<String> getNbnsByLocation(String location) {
     List<String> nbns = new ArrayList<>();
     ResultSet rs = null;
     Connection conn = null;
@@ -345,7 +345,7 @@ public class Dao {
     PreparedStatement pstmt = null;
     try {
       conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT R.prefix, R.isLTP FROM registrant R inner join credentials C ON R.registrant_id = C.registrant_id WHERE C.username = ? AND C.password = ?;");
+      pstmt = conn.prepareStatement("SELECT R.prefix, R.isLTP, R.registrant_id, R.registrant_groupid FROM registrant R inner join credentials C ON R.registrant_id = C.registrant_id WHERE C.username = ? AND C.password = ?;");
       pstmt.setString(1, username);
       pstmt.setString(2, password);
       rs = pstmt.executeQuery();
@@ -357,6 +357,8 @@ public class Dao {
         user = new User();
         user.setOrgPrefix(rs.getString(1));
         user.setLTP(rs.getBoolean(2));
+        user.setRegistrantId(rs.getInt(3));
+        user.setRegistrantGroupId(rs.getString(4));
         logger.debug("Called getUserByCredentials: " + username);
       }
     }
@@ -391,7 +393,7 @@ public class Dao {
     PreparedStatement pstmt = null;
     try {
       conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT R.prefix, R.isLTP FROM registrant R inner join credentials C ON R.registrant_id = C.registrant_id WHERE C.token = ?;");
+      pstmt = conn.prepareStatement("SELECT R.prefix, R.isLTP, R.registrant_id, R.registrant_groupid FROM registrant R inner join credentials C ON R.registrant_id = C.registrant_id WHERE C.token = ?;");
       pstmt.setString(1, token);
       rs = pstmt.executeQuery();
       if (!rs.next()) {
@@ -402,6 +404,8 @@ public class Dao {
         user = new User();
         user.setOrgPrefix(rs.getString(1));
         user.setLTP(rs.getBoolean(2));
+        user.setRegistrantId(rs.getInt(3));
+        user.setRegistrantGroupId(rs.getString(4));
       }
     }
     finally {
@@ -466,4 +470,42 @@ public class Dao {
     return unfragmented;
   }
 
+  public static boolean isRegistrantFailoverLocation(String location, String orgPrefix) {
+    boolean isFailover = false;
+    ResultSet rs = null;
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+
+    try {
+      int registrant_id = getRegistrantIdByOrgPrefix(orgPrefix);
+      conn = PooledDataSource.getConnection();
+      pstmt = conn.prepareStatement("SELECT IL.isFailover FROM identifier_location IL JOIN location L ON IL.location_id = L.location_id JOIN location_registrant LR ON L.location_id = LR.location_id WHERE IL.isFailover = '1' AND L.location_url = ? AND LR.registrant_id = ?;");
+      pstmt.setString(1, location);
+      pstmt.setInt(2, registrant_id);
+      rs = pstmt.executeQuery();
+      if (rs.next()) {
+        isFailover = true;
+      }
+    }
+    catch (SQLException e) {
+      logger.error("Could not retrieve isFailover from database for location: " + location + ". Error: " + e.toString());
+      logger.debug(e.getMessage());
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (pstmt != null) {
+          pstmt.close();
+        }
+        if (conn != null) {
+          conn.close();
+        }
+      }
+      catch (Exception ignored) {
+      }
+    }
+    return isFailover;
+  }
 }

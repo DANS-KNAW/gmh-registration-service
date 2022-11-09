@@ -136,23 +136,28 @@ public class NbnLocationApp {
   }
 
   public OperationResult doGetNbnByLocation(String location, SecurityContext securityContext) {
+    boolean isAllowed = false;
+
     if (!LocationValidator.validate(location))
       return new BadRequest(location);
-    List<String> nbn = Dao.getNbnByLocation(location);
-    boolean isMatch = false;
-    if (securityContext.isUserInRole("LTP")) { // No restrictions for LTP.
-      isMatch = true;
+
+    List<String> nbns = Dao.getNbnsByLocation(location);
+
+    if (securityContext.isUserInRole("LTP")) { //Check if given location is registered by this TLPA as failover:
+      if (Dao.isRegistrantFailoverLocation(location, securityContext.getUserPrincipal().getName())) {
+        isAllowed = true;
+      }
     }
     else {
-      for (String identifier : nbn) {
+      for (String identifier : nbns) {
         if (NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName())) {
-          isMatch = true;
+          isAllowed = true;
           break;
         }
       }
     }
-    if (nbn.size() > 0 && isMatch) {
-      return new Ok(nbn);
+    if (nbns.size() > 0 && isAllowed) {
+      return new Ok(nbns);
     }
     else {
       return new NotFound(location);
