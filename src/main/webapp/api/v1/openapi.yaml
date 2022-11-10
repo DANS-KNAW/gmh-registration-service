@@ -38,8 +38,8 @@ paths:
     post:
       security:
         - BearerAuth: [ ]
-      summary: 'Registers a new URN:NBN {identifier} associated with a prioritized list of locations.'
-      description: 'Registers a new URN:NBN associated with a prioritized list of locations. Multiple locations are prioritized in respective order. The first location is the preferred. The second is failover, etc. <br />The NBN identifier must have a prefix that matches the authenticated user. If the registered user is a registered LTP archive, the submittede locations will be registered as LTP locations.'
+      summary: 'Registers a new URN:NBN {identifier} associated with a prioritised list of locations.'
+      description: 'Registers a new identifier associated with a prioritised list of locations. <br />Multiple locations are prioritised in respective order. The first location is the preferred. The second is failover, etc. <br />The identifier must have a prefix that matches the prefix of the authenticated user, as issued by the Dutch KB, unless you are a LTP archive.<br />If the registered user is a LTP archive, the submitted locations will be registered as LTP locations. I.e. these locations cannot be overwritten by the "owner".'
       operationId: 'createNbnLocations'
       requestBody:
         required: true
@@ -65,35 +65,11 @@ paths:
   /nbn/{identifier}:
     parameters:
       - $ref: '#/components/parameters/nbn_identifier'
-    get:
-      security:
-        - BearerAuth: [ ]
-      summary: 'Returns URN:NBN object (urn:nbn + locations) for this {identifier}.'
-      description: 'Returns URN:NBN object (urn:nbn + LTP location objects) for this {identifier}.<br />The identifier must have a prefix that matches the authenticated user if it is not a LTP user. HTTP 404 otherwise.<br />Use this method to see if your URN:NBN has a LTP location associated with it.'
-      operationId: 'getNbnRecord'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NbnLtpLocationsObject'
-        '400':
-          description: Invalid URN:NBN identifier pattern supplied
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          description: URN:NBN-prefix is not registered to this user
-        '404':
-          description: Supplied URN:NBN identifier not found
-      tags:
-        - URN:NBN identifier
-
     put:
       security:
         - BearerAuth: [ ]
-      summary: 'Updates an existing URN:NBN {identifier} or registers a new URN:NBN {identifier} associated with a prioritized list of locations.'
-      description: 'Updates or registers a (new) URN:NBN associated with a prioritized list of locations. Multiple locations are prioritized in respective order. The first location is the preferred. The second is failover, etc. <br />Identifiers must have a prefix that matches the authenticated user, unless you are a registered LTP user. In case of an update the existing locations will be replaced by the locations provided in this request.'
+      summary: 'Updates an existing URN:NBN {identifier} or registers a new URN:NBN {identifier} associated with a prioritised list of locations.'
+      description: 'Updates or registers a (new) identifier associated with a prioritised list of locations. Multiple locations are prioritized in respective order. The first location is the preferred. The second is failover, etc. <br />Identifiers must have a prefix that matches the prefix of the authenticated user, as issued by the Dutch KB, unless you are a LTP archive.<br />In case of an update the existing locations will be replaced by the locations provided in this request.'
       operationId: 'updateNbnRecord'
       requestBody:
         required: true
@@ -115,6 +91,30 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           description: URN:NBN-prefix is not registered to this user
+      tags:
+        - URN:NBN identifier
+
+    get:
+      security:
+        - BearerAuth: [ ]
+      summary: 'Returns URN:NBN object (urn:nbn + locations) for this {identifier}.'
+      description: 'Returns an identifier object (urn:nbn + (LTP) location objects) for this {identifier}.<br />The identifier must have a prefix that matches the authenticated user if it is not a LTP archive user. HTTP 404 otherwise.<br />Use this method to see if your URN:NBN has a LTP location associated with it.'
+      operationId: 'getNbnRecord'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NbnLtpLocationsObject'
+        '400':
+          description: Invalid URN:NBN identifier pattern supplied
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: URN:NBN-prefix is not registered to this user
+        '404':
+          description: Supplied URN:NBN identifier not found
       tags:
         - URN:NBN identifier
 
