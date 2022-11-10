@@ -47,7 +47,7 @@ public class NbnLocationApp {
 
   public NbnLocationApp() {
   }
-  //TODO: Undocumented feature: LTP is able to update ALL nbn's.
+
   public OperationResult doCreateNbnLocations(NbnLocationsObject body, SecurityContext securityContext) {
     String identifier = body.getIdentifier();
     boolean nbnIsValid = NbnValidator.validate(body.getIdentifier());
@@ -55,21 +55,52 @@ public class NbnLocationApp {
     boolean isLTP = securityContext.isUserInRole("LTP");
 
     if (!nbnIsValid || !locationsValid)
-      return new BadRequest(identifier); //400, Invalid URN:NBN identifier pattern or location uri(s) supplied
+      return new BadRequest(identifier); //400, Invalid URN:NBN identifier pattern or location uri(s) supplied.
+
     if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !isLTP)
-      return new Forbidden(); //403; URN:NBN identifier is valid, but does not match the prefix of the authenticated user, if user is not isLTP
+      return new Forbidden(); //403; URN:NBN identifier is valid, but does not match the prefix of the authenticated user, and user is not LTP.
 
     try {
-      int registrantId = Dao.getRegistrantIdByOrgPrefix(securityContext.getUserPrincipal().getName());
       if (Dao.isResolvableIdentifier(identifier))
-        return new Conflict(identifier); //409, resource already exists (i.e. is resolvable, continue if the NBN identifier exists in the identifier table, but is not resolvable.)
+        return new Conflict(identifier); //409, resource already exists (i.e. is resolvable, but continue if the NBN identifier exists in the identifier table, but is not resolvable.)
       else {
+        int registrantId = Dao.getRegistrantIdByOrgPrefix(securityContext.getUserPrincipal().getName());
         Dao.addNbnLocations(body, registrantId, isLTP);
         return new Created(identifier);//201 Created the resource
       }
     }
     catch (SQLException e) {
       logger.error("A Sql error occurred in doCreateNbnLocations: " + e);
+      return new InternalServerError();
+    }
+  }
+
+  public OperationResult doUpdateNbnRecord(List<String> body, String identifier, SecurityContext securityContext) {
+    NbnLocationsObject nbnLocationsObject = createNbnLocationsObject(body, identifier);
+    boolean nbnIsValid = NbnValidator.validate(identifier);
+    boolean locationsValid = LocationValidator.validateAllLocations(body);
+    boolean isLTP = securityContext.isUserInRole("LTP");
+
+    if (!nbnIsValid || !locationsValid)
+      return new BadRequest(identifier); //400, Invalid URN:NBN identifier pattern or location uri(s) supplied.
+
+    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !isLTP) //TODO: Undocumented feature: LTP is able to update ALL nbn's.
+      return new Forbidden(); //403; URN:NBN identifier is valid, but does not match the prefix of the authenticated user, and user is not LTP.
+
+    try {
+      int registrantId = Dao.getRegistrantIdByOrgPrefix(securityContext.getUserPrincipal().getName());
+      if (Dao.isResolvableIdentifier(identifier)) { //Check if nbn is resolvable (=update), or not (=create new one): Important to tell, because the API differentiates between update (200 OK) and created (201 CREATED) in response.
+        Dao.deleteNbnLocationsByRegistrantId(registrantId, identifier, isLTP);
+        Dao.addNbnLocations(nbnLocationsObject, registrantId, isLTP);
+        return new Ok(new ResponseMessage(OK.getStatusCode(), "OK (updated existing)"));
+      }
+      else { //NBN is not resolvable, but may exist in the identifier table (not likely, but technically possible in the DB-schema) so we'll pretend we created a new one, by returning a HTTP 201 CREATED.
+        Dao.addNbnLocations(nbnLocationsObject, registrantId, isLTP);
+        return new Created(identifier);
+      }
+    }
+    catch (SQLException e) {
+      logger.error("A Sql error occurred: " + e);
       return new InternalServerError();
     }
   }
@@ -110,34 +141,6 @@ public class NbnLocationApp {
     }
   }
 
-  public OperationResult doUpdateNbnRecord(List<String> body, String identifier, SecurityContext securityContext) {
-    NbnLocationsObject nbnLocationsObject = getNbnLocationsObject(body, identifier);
-    boolean nbnIsValid = NbnValidator.validate(identifier);
-    boolean locationsValid = LocationValidator.validateAllLocations(body);
-    boolean isLTP = securityContext.isUserInRole("LTP");
-
-    if (!nbnIsValid || !locationsValid)
-      return new BadRequest(identifier); //400, Invalid URN:NBN identifier pattern or location uri(s) supplied
-    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !isLTP) //TODO: Undocumented feature: LTP is able to update ALL nbn's.
-      return new Forbidden(); //403; URN:NBN identifier is valid, but does not match the prefix of the authenticated user, if user is not isLTP
-    try {
-      int registrantId = Dao.getRegistrantIdByOrgPrefix(securityContext.getUserPrincipal().getName());
-      if (Dao.isResolvableIdentifier(identifier)) { //Check if nbn is resolvable (=update), or not (=create new one): Important to tell, because the API differentiates between update (200 OK) and created (201 CREATED) in response.
-        Dao.deleteNbnLocationsByRegistrantId(registrantId, identifier, isLTP);
-        Dao.addNbnLocations(nbnLocationsObject, registrantId, isLTP);
-        return new Ok(new ResponseMessage(OK.getStatusCode(), "OK (updated existing)"));
-      }
-      else { //NBN is not resolvable, but may exist in the identifier table (not likely, but technically possible in the DB-schema) so we'll pretent we created a new one, by returning a HTTP 201 CREATED.
-        Dao.addNbnLocations(nbnLocationsObject, registrantId, isLTP);
-        return new Created(identifier);
-      }
-    }
-    catch (SQLException e) {
-      logger.error("A Sql error occurred: " + e);
-      return new InternalServerError();
-    }
-  }
-
   public OperationResult doGetNbnByLocation(String location, SecurityContext securityContext) {
     boolean isAllowed = false;
 
@@ -167,14 +170,14 @@ public class NbnLocationApp {
     }
   }
 
-  private NbnLocationsObject getNbnLocationsObject(List<String> body, String identifier) {
+  private NbnLocationsObject createNbnLocationsObject(List<String> body, String identifier) {
     NbnLocationsObject nbnLocationsObject = new NbnLocationsObject();
     nbnLocationsObject.setIdentifier(identifier);
     nbnLocationsObject.setLocations(body);
     return nbnLocationsObject;
   }
 
-  private NbnLtpLocationsObject getNbnLtpLocationsObject(List<LtpLocation> body, String identifier) {
+  private NbnLtpLocationsObject createNbnLtpLocationsObject(List<LtpLocation> body, String identifier) {
     NbnLtpLocationsObject nbnLtpLocationsObject = new NbnLtpLocationsObject();
     nbnLtpLocationsObject.setIdentifier(identifier);
     nbnLtpLocationsObject.setLocations(body);

@@ -37,6 +37,6 @@ public class BadRequest implements OperationResult {
 
   @Override
   public Object getResponseBody() {
-    return new ResponseMessage(BAD_REQUEST.getStatusCode(), "Invalid URN:NBN identifier pattern or location uri(s) supplied: " + identifier);
+    return new ResponseMessage(BAD_REQUEST.getStatusCode(), "Invalid URN:NBN identifier pattern or location URL(s) supplied: " + identifier);
   }
 }
