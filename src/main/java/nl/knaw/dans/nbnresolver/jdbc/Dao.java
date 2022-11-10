@@ -170,28 +170,6 @@ public class Dao {
     }
   }
 
-  //  /**
-  //   * @param registantId Local-DB Registrant Identifier
-  //   * @param identifier  URN:NBN (fragmented)
-  //   * @throws SQLException Deletes URN:NBN locations registered by this Registrant.
-  //   */
-  //  public static void deleteNbnLocationsByRegId(int registantId, String identifier) throws SQLException {
-  //    String unfragmented_id = getUnfragmentedString(identifier);
-  //    Connection conn = PooledDataSource.getConnection();
-  //    conn.setAutoCommit(false);
-  //    CallableStatement callableStatement = conn.prepareCall("{call deleteNbnLocationsByRegistrant(?, ?)}");
-  //    callableStatement.setString(1, unfragmented_id);
-  //    callableStatement.setInt(2, registantId);
-  //    callableStatement.executeUpdate();
-  //    try {
-  //      conn.close();
-  //      logger.info("Deleted locations from DB for registrant_id: " + registantId + " and NBN identifier: " + unfragmented_id);
-  //    }
-  //    catch (Exception e) {
-  //      logger.error("Deleting locations from DB for registrant_id: " + registantId + " and NBN identifier: " + unfragmented_id + " went wrong. Error: " + e.toString());
-  //    }
-  //  }
-
   /**
    * @param registantId Local-DB Registrant Identifier
    * @param identifier  URN:NBN (fragmented)
@@ -253,10 +231,10 @@ public class Dao {
     try {
       conn = PooledDataSource.getConnection();
       if (includeLTP) {
-        pstmt = conn.prepareStatement("SELECT L.location_url, IL.isFailover FROM identifier I JOIN identifier_location IL ON I.identifier_id = IL.identifier_id JOIN location L ON L.location_id = IL.location_id WHERE I.identifier_value=? ORDER BY IL.isFailover, IL.last_modified DESC");
+        pstmt = conn.prepareStatement("SELECT L.location_url, IL.isFailover FROM identifier I JOIN identifier_location IL ON I.identifier_id = IL.identifier_id JOIN location L ON L.location_id = IL.location_id WHERE I.identifier_value=? ORDER BY IL.isFailover, IL.last_modified ASC");
       }
       else {
-        pstmt = conn.prepareStatement("SELECT L.location_url, IL.isFailover FROM identifier I JOIN identifier_location IL ON I.identifier_id = IL.identifier_id JOIN location L ON L.location_id = IL.location_id WHERE I.identifier_value=? AND IL.isFailover=0 ORDER BY IL.isFailover, IL.last_modified DESC");
+        pstmt = conn.prepareStatement("SELECT L.location_url, IL.isFailover FROM identifier I JOIN identifier_location IL ON I.identifier_id = IL.identifier_id JOIN location L ON L.location_id = IL.location_id WHERE I.identifier_value=? AND IL.isFailover=0 ORDER BY IL.isFailover, IL.last_modified ASC");
       }
       pstmt.setString(1, unfragmented);
       rs = pstmt.executeQuery();
