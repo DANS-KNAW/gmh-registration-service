@@ -46,6 +46,7 @@ public class TokenApiServiceImpl extends TokenApiService {
   public Response token(Credentials body, SecurityContext securityContext) throws NotFoundException {
     String username = body.getUsername();
     String password = body.getPassword();
+    System.out.println("USER: " + username);
 
     try {
       // Authenticate the user using the credentials provided
