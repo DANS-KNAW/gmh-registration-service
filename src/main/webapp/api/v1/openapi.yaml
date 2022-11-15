@@ -197,10 +197,10 @@ paths:
         - Token
 
 servers:
-  - url: /nbn
-    description: (test)
-  - url: https://nbnresolver.nl/nbn/api/v1
-    description: (production)
+  - description: (localhost)
+    url: /nbn
+  - description: (tgharvester/tomcat)
+    url: /gmh-registration-service/nbn
 
 tags:
   - name: URN:NBN identifier
