@@ -84,7 +84,7 @@ public class NbnLocationApp {
     if (!nbnIsValid || !locationsValid)
       return new BadRequest(identifier); //400, Invalid URN:NBN identifier pattern or location uri(s) supplied.
 
-    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !isLTP) //TODO: Undocumented feature: LTP is able to update ALL nbn's.
+    if (!NbnValidator.prefixMatches(identifier, securityContext.getUserPrincipal().getName()) && !isLTP)
       return new Forbidden(); //403; URN:NBN identifier is valid, but does not match the prefix of the authenticated user, and user is not LTP.
 
     try {

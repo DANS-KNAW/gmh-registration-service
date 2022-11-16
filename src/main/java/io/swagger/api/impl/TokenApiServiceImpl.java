@@ -62,7 +62,7 @@ public class TokenApiServiceImpl extends TokenApiService {
 
     }
     catch (InvalidCredentialsException e) {
-      return Response.status(FORBIDDEN).entity("Authentication failed: invalid credentials").build();
+      return Response.status(FORBIDDEN).entity("API token generation failed: invalid credentials").build();
     }
     catch (SQLException ex) {
       logger.error("Database error: " + ex.getMessage());

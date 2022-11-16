@@ -176,10 +176,9 @@ paths:
 
   /token:
     post:
-      # security:
-      #   - UserLogin: [ ]
+      security: []   # No security
       summary: 'Returns an api token'
-      description: 'Authenticates a user and generates an api token to be used for requests to the other endpoints.'
+      description: 'Authenticates a user and (re)generates an api token to be used for requests to the other endpoints.'
       operationId: 'token'
       requestBody:
         required: true
@@ -191,10 +190,10 @@ paths:
       responses:
         '200':
           description: OK (Token generated)
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Invalid credentials
       tags:
-        - Token
+        - API Token
 
 servers:
   - description: (localhost)
@@ -207,7 +206,7 @@ tags:
     description: The URN:NBN persistent identifier.
   - name: Location
     description: The URI to which the URN:NBN identifier should resolve.
-  - name: Token
+  - name: API Token
     description: API authentication Bearer token.
 
 components:
