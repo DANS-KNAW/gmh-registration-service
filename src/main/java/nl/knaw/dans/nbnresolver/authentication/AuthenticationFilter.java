@@ -38,6 +38,8 @@ import java.sql.SQLException;
 //See: https://cassiomolin.com/2014/11/06/token-based-authentication-with-jaxrs-20/
 //See: @PreMatching https://stackoverflow.com/questions/56799899/jersey-securitycontext-getuserprincipal-returns-null-for-non-singleton-resourc
 //                  https://abhishek-gupta.gitbook.io/rest-assured-with-jaxrs/jax-rs-providers-part-ii
+//https://github.com/RedHatInsights/policies-ui-backend/blob/master/src/main/java/com/redhat/cloud/policies/app/auth/IncomingRequestFilter.java
+//https://itnext.io/how-to-implement-a-jax-rs-authentication-filter-3eee64b34b99
 
 @Secured
 @Provider
@@ -50,23 +52,28 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
   @Override
   public void filter(ContainerRequestContext requestContext) {
+
+    String uriPath = requestContext.getUriInfo().getPath();
+
+    // The following are available to everyone
+    if (uriPath.endsWith("openapi.yaml") || uriPath.equalsIgnoreCase("token")) {
+      return; // We are done here, just continue
+    }
+
     // Get the Authorization header from the request
     String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
 
-    // Validate the Authorization header. QUICK AND DIRTY; BEWARE the PATH CHECK (token) HERE!!!
-    if (!isTokenBasedAuthentication(authorizationHeader) && (!requestContext.getUriInfo().getPath().equalsIgnoreCase("token"))) {
+    // Validate the Authorization header.
+    if (!isTokenBasedAuthentication(authorizationHeader)) {
       abortWithUnauthorized(requestContext);
       return;
     }
 
     // Extract the token from the Authorization header
-    String token = null;
-    User currentUser = null;
-    if (authorizationHeader != null) {
-      token = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
-      // Validate the token
-      currentUser = validateToken(token, requestContext);
-    }
+    String token = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
+
+    // Validate the token
+    User currentUser = validateToken(token, requestContext);
 
     User finalCurrentUser = currentUser;
     requestContext.setSecurityContext(new SecurityContext() {

@@ -30,6 +30,6 @@ public class Forbidden implements OperationResult {
 
   @Override
   public Object getResponseBody() {
-    return new ResponseMessage(FORBIDDEN.getStatusCode(), "The identifier cannot be registered by you, or it is unknown.");
+    return new ResponseMessage(FORBIDDEN.getStatusCode(), "The identifier prefix doesn't match, or it is unknown.");
   }
 }
