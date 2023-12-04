@@ -49,6 +49,7 @@ public class PooledDataSource {
       logger.error("Cannot load properties file '" + PROPERTIES_FILE + "'.", e);
     }
 
+    DS.setDriverClassName("org.mariadb.jdbc.Driver");
     DS.setUrl(PROPERTIES.getProperty("MYSQL_DB_URL"));
     DS.setUsername(PROPERTIES.getProperty("MYSQL_DB_USERNAME"));
     DS.setPassword(PROPERTIES.getProperty("MYSQL_DB_PASSWORD"));
