@@ -30,8 +30,8 @@ info:
   version: 0.1.1
 
 externalDocs:
-  description: NBN Resolver on GitHub
-  url: 'https://github.com/DANS-KNAW/gmh-meresco'
+  description: GMH Registration Service on GitHub
+  url: 'https://github.com/DANS-KNAW/gmh-registration-service'
 
 paths:
   /nbn:
@@ -198,7 +198,7 @@ paths:
 servers:
   - description: (localhost)
     url: /nbn
-  - description: (tgharvester/tomcat)
+  - description: (tomcat)
     url: /gmh-registration-service/nbn
 
 tags:

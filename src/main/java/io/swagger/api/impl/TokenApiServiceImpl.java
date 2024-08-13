@@ -48,8 +48,6 @@ public class TokenApiServiceImpl extends TokenApiService {
     String password = body.getPassword();
 
     try {
-      // Authenticate the user using the credentials provided
-      authenticate(username, password);
 
       // Issue a token for the user
       String token = issueToken();
@@ -61,20 +59,16 @@ public class TokenApiServiceImpl extends TokenApiService {
       return Response.ok(token).build();
 
     }
-    catch (InvalidCredentialsException e) {
+    catch (InvalidCredentialsException | IllegalArgumentException e) {
       return Response.status(FORBIDDEN).entity("API token generation failed: invalid credentials").build();
     }
     catch (SQLException ex) {
       logger.error("Database error: " + ex.getMessage());
       logger.debug(ex.getMessage());
-      return Response.status(INTERNAL_SERVER_ERROR).entity("Internal server error").build();
+      return Response.status(INTERNAL_SERVER_ERROR).entity("Internal server error (DB)").build();
     }
   }
 
-  private void authenticate(String username, String password) throws InvalidCredentialsException, SQLException {
-    // Throw an Exception if the credentials are invalid
-    user = Dao.getUserByCredentials(username, password);
-  }
 
   private String issueToken() {
     byte[] randomBytes = new byte[48];

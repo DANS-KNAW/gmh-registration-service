@@ -17,6 +17,7 @@ package nl.knaw.dans.nbnresolver.jdbc;
 
 import io.swagger.model.LtpLocation;
 import io.swagger.model.NbnLocationsObject;
+import nl.knaw.dans.nbnresolver.authentication.PasswordUtils;
 import nl.knaw.dans.nbnresolver.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -323,15 +324,19 @@ public class Dao {
     PreparedStatement pstmt = null;
     try {
       conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("SELECT R.prefix, R.isLTP, R.registrant_id, R.registrant_groupid FROM registrant R inner join credentials C ON R.registrant_id = C.registrant_id WHERE C.username = ? AND C.password = ?;");
+      pstmt = conn.prepareStatement("SELECT R.prefix, R.isLTP, R.registrant_id, R.registrant_groupid, C.password FROM registrant R inner join credentials C ON R.registrant_id = C.registrant_id WHERE C.username = ?;");
       pstmt.setString(1, username);
-      pstmt.setString(2, password);
       rs = pstmt.executeQuery();
       if (!rs.next()) {
-        logger.warn("Provided credentials were invalid for username: " + username);
+        logger.warn("Provided username not found in DB: " + username);
         throw new InvalidCredentialsException("Provided credentials were invalid");
       }
       else {
+        String hashedPassword = rs.getString(5);
+        if (!PasswordUtils.verifyPassword(password, hashedPassword)) {
+          logger.warn("Invalid password for user: " + username);
+          throw new InvalidCredentialsException("Provided credentials were invalid");
+        }
         user = new User();
         user.setOrgPrefix(rs.getString(1));
         user.setLTP(rs.getBoolean(2));
@@ -410,16 +415,16 @@ public class Dao {
    * @param password     Password of the existing user.
    * @throws SQLException If the token can not be persisted.
    */
-  public static void registerToken(String new_jwttoken, String username, String password) throws SQLException {
+  public static void registerToken(String new_jwttoken, String username, String password) throws SQLException, InvalidCredentialsException {
     Connection conn = null;
     PreparedStatement pstmt = null;
-
+    User user = Dao.getUserByCredentials(username, password);
     try {
       conn = PooledDataSource.getConnection();
-      pstmt = conn.prepareStatement("UPDATE credentials C SET C.token = ? WHERE C.username = ? AND C.password = ?;");
+      pstmt = conn.prepareStatement("UPDATE credentials C SET C.token = ? WHERE C.username = ? AND C.registrant_id = ?;");
       pstmt.setString(1, new_jwttoken);
       pstmt.setString(2, username);
-      pstmt.setString(3, password);
+      pstmt.setInt(3, user.getRegistrantId());
       int resultCode = pstmt.executeUpdate();
       if (resultCode != 1) {
         logger.error("Error registering new JWT token " + new_jwttoken + " for: " + username);
