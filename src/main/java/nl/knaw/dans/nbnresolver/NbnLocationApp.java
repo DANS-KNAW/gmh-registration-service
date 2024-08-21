@@ -24,6 +24,7 @@ import nl.knaw.dans.nbnresolver.response.Conflict;
 import nl.knaw.dans.nbnresolver.response.Created;
 import nl.knaw.dans.nbnresolver.response.Forbidden;
 import nl.knaw.dans.nbnresolver.response.InternalServerError;
+import nl.knaw.dans.nbnresolver.response.NbnIdentifiersResponse;
 import nl.knaw.dans.nbnresolver.response.NotFound;
 import nl.knaw.dans.nbnresolver.response.Ok;
 import nl.knaw.dans.nbnresolver.response.OperationResult;
@@ -163,7 +164,8 @@ public class NbnLocationApp {
       }
     }
     if (nbns.size() > 0 && isAllowed) {
-      return new Ok(nbns);
+      NbnIdentifiersResponse response = new NbnIdentifiersResponse(nbns);
+      return new Ok(response);
     }
     else {
       return new NotFound(location);

@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.nbnresolver.authentication;
+package nl.knaw.dans.nbnresolver.response;
 
-import org.mindrot.bcrypt.BCrypt;
+import java.util.List;
 
-public class PasswordUtils {
+public class NbnIdentifiersResponse {
+    private List<String> identifiers;
 
-  public static String hashPassword(String password) {
-    return BCrypt.hashpw(password, BCrypt.gensalt());
-  }
+    public NbnIdentifiersResponse(List<String> identifiers) {
+        this.identifiers = identifiers;
+    }
 
-  public static boolean verifyPassword(String password, String hashedPassword) {
-    return BCrypt.checkpw(password, hashedPassword);
-  }
+    public List<String> getIdentifiers() {
+        return identifiers;
+    }
 
-  public static void main(String[] args) {
-    String password = "";
-    String hashedPassword = hashPassword(password);
-    System.out.println("Hashed password: " + hashedPassword);
-    System.out.println("Password matches: " + verifyPassword(password, hashedPassword));
-  }
-
+    public void setIdentifiers(List<String> identifiers) {
+        this.identifiers = identifiers;
+    }
 }
+

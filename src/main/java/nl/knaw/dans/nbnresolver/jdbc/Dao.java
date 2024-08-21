@@ -287,9 +287,10 @@ public class Dao {
       while (rs.next()) {
         nbns.add(rs.getString(1));
       }
+      logger.debug("FOUND NBNS: {}", nbns.toString());
     }
     catch (SQLException e) {
-      logger.error("Nbn could not be retrieved from database for location: " + location + ". Error: " + e.toString());
+      logger.error("Nbn could not be retrieved from database for location: {}. Error: {}", location, e.toString());
       logger.debug(e.getMessage());
     }
     finally {

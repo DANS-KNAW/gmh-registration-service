@@ -153,7 +153,7 @@ paths:
     get:
       security:
         - BearerAuth: [ ]
-      operationId: getNbnByLocation
+      operationId: 'getNbnByLocation'
       summary: Returns URN:NBN identifier(s) registered to this location.
       description: Returns URN:NBN identifier(s) registered to this location, if 1) at least one of the registered NBN's prefixes belong to the authenticated user, or 2) this is an LTP location registered by the authenticated LTP archive.
       responses:
@@ -161,9 +161,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/NbnIdentifier'
+                $ref: '#/components/schemas/NbnIdentifiersResponse'
           description: OK
         '400':
           description: Invalid location URL pattern supplied
@@ -255,7 +253,20 @@ components:
     NbnIdentifier:
       type: string
       example:
-        'urn:nbn:nl:ui:17-example'
+        "urn:nbn:nl:ui:17-example"
+
+    NbnIdentifiersResponse:
+      type: object
+      properties:
+        identifiers:
+          type: array
+          items:
+            type: string
+          example:
+            - "urn:nbn:nl:ui:13-0w2-rnj"
+            - "urn:nbn:nl:ui:13-00-6rwq"
+            - "urn:nbn:nl:ui:13-example-16"
+            - "urn:nbn:nl:ui:13-75da3602-e307-4bc4-9e8c-bba94fadfda1"
 
     LtpLocation:
       type: object
