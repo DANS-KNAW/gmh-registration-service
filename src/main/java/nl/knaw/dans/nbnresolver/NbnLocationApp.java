@@ -144,14 +144,15 @@ public class NbnLocationApp {
 
   public OperationResult doGetNbnByLocation(String location, SecurityContext securityContext) {
     boolean isAllowed = false;
+    String location_enc = decodeEncodedSlashes(location);
+    logger.debug("doGetNbnByLocation#validate location string: {}", location_enc);
+    if (!LocationValidator.validate(location_enc))
+      return new BadRequest(location_enc);
 
-    if (!LocationValidator.validate(location))
-      return new BadRequest(location);
-
-    List<String> nbns = Dao.getNbnsByLocation(location);
+    List<String> nbns = Dao.getNbnsByLocation(location_enc);
 
     if (securityContext.isUserInRole("LTP")) { //Check if given location is registered by this TLPA as failover:
-      if (Dao.isRegistrantFailoverLocation(location, securityContext.getUserPrincipal().getName())) {
+      if (Dao.isRegistrantFailoverLocation(location_enc, securityContext.getUserPrincipal().getName())) {
         isAllowed = true;
       }
     }
@@ -168,7 +169,7 @@ public class NbnLocationApp {
       return new Ok(response);
     }
     else {
-      return new NotFound(location);
+      return new NotFound(location_enc);
     }
   }
 
@@ -186,4 +187,16 @@ public class NbnLocationApp {
     return nbnLtpLocationsObject;
   }
 
+  /**
+   * Decodes encoded slashes (%2F) in the given URL string. Currently, Apache proxy double encodes slashes in the URL, OR strips double // to one slash, which is not correct behavior. Hence this workaround.
+   *
+   * @param url the URL string to decode
+   * @return the URL string with encoded slashes replaced by actual slashes,
+   * or the original URL string if it is null, empty, or contains only whitespace
+   */
+  private static String decodeEncodedSlashes(String url) {
+    return (url == null || url.isEmpty() || url.trim().isEmpty()) ? url : url.replace("%2F", "/");
+  }
+
 }
+
